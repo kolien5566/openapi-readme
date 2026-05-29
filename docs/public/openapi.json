@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Pylontech RESS OpenAPI",
+    "title": "Pylontech OpenAPI",
     "version": "1.0.0",
-    "description": "Pylontech Residential Energy Storage System OpenAPI specification for VPP partners to retrieve data and control devices.",
+    "description": "Pylontech Energy Storage System OpenAPI specification for partners to retrieve data and control devices.",
     "contact": {
       "name": "Technical Support",
       "email": "zhao.kai@pylontech.com.cn"
@@ -11,8 +11,8 @@
   },
   "servers": [
     {
-      "url": "https://openapi.pylontech.com/v1",
-      "description": "Test Environment"
+      "url": "https://openapi-au.pylontechcloud.com/api/openapi/v1",
+      "description": "Production Environment"
     }
   ],
   "security": [
@@ -34,6 +34,10 @@
       "description": "Latest and historical telemetry data query"
     },
     {
+      "name": "Batch Telemetry Data",
+      "description": "Batch latest telemetry data query"
+    },
+    {
       "name": "Energy Statistics",
       "description": "Energy statistics data aggregated by period (day/month/year)"
     },
@@ -44,6 +48,10 @@
     {
       "name": "Device Dispatch",
       "description": "Command and device configuration"
+    },
+    {
+      "name": "Batch Device Dispatch",
+      "description": "Batch command and device configuration"
     }
   ],
   "paths": {
@@ -397,7 +405,7 @@
     },
     "/sites/latestData/query": {
       "post": {
-        "tags": ["Telemetry Data"],
+        "tags": ["Batch Telemetry Data"],
         "summary": "Batch get site latest telemetry data",
         "description": "Get the latest telemetry data for multiple sites.",
         "requestBody": {
@@ -471,7 +479,7 @@
     },
     "/devices/latestData/query": {
       "post": {
-        "tags": ["Telemetry Data"],
+        "tags": ["Batch Telemetry Data"],
         "summary": "Batch get device latest telemetry data",
         "description": "Get the latest telemetry data for multiple devices.",
         "requestBody": {
@@ -863,7 +871,7 @@
     },
     "/devices/commands": {
       "post": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Batch Device Dispatch"],
         "summary": "Batch send device commands",
         "description": "Send the same power dispatch command to multiple devices and return a batch command ID for tracking or cancellation.",
         "requestBody": {
@@ -935,7 +943,7 @@
     },
     "/devices/commands/{batchCommandId}/cancel": {
       "put": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Batch Device Dispatch"],
         "summary": "Cancel batch command",
         "description": "Cancel executing or pending commands created by a batch command instruction.",
         "parameters": [
@@ -1199,7 +1207,7 @@
     },
     "/devices/tou/query": {
       "post": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Batch Device Dispatch"],
         "summary": "Batch get device TOU strategies",
         "description": "Get Time of Use (TOU) strategy configurations for multiple devices.",
         "requestBody": {
@@ -1255,7 +1263,7 @@
     },
     "/devices/tou": {
       "post": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Batch Device Dispatch"],
         "summary": "Batch set or update device TOU strategies",
         "description": "Configure the same Time of Use (TOU) strategy for multiple devices.",
         "requestBody": {
@@ -1454,7 +1462,7 @@
     },
     "/devices/configuration/query": {
       "post": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Batch Device Dispatch"],
         "summary": "Batch get device configurations",
         "description": "Get persistent configuration parameters for multiple devices.",
         "requestBody": {
@@ -1510,7 +1518,7 @@
     },
     "/devices/configuration": {
       "post": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Batch Device Dispatch"],
         "summary": "Batch update device configurations",
         "description": "Update persistent configuration parameters for multiple devices. All configuration fields are optional; only send parameters that need to be updated.",
         "requestBody": {

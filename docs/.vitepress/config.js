@@ -3,6 +3,8 @@ import { useSidebar } from 'vitepress-openapi'
 import spec from '../public/openapi.json' with { type: 'json' }
 
 const openapiSidebar = useSidebar({ spec })
+const apiProxyPrefix = '/api/openapi/v1'
+const apiProxyTarget = 'https://openapi-au.pylontechcloud.com'
 
 function escapeHtml(value) {
   return String(value)
@@ -25,6 +27,17 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: false,
   appearance: false,
+  vite: {
+    server: {
+      proxy: {
+        [apiProxyPrefix]: {
+          target: apiProxyTarget,
+          changeOrigin: true,
+          secure: true,
+        },
+      },
+    },
+  },
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
   ],
