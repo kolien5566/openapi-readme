@@ -11,13 +11,13 @@
   },
   "servers": [
     {
-      "url": "https://openapi-au.pylontechcloud.com/api/openapi/v1",
+      "url": "https://openapi.pylontechcloud.com/api/openapi/v1",
       "description": "Production Environment"
     }
   ],
   "security": [
     {
-      "OAuth2": []
+      "AccessToken": []
     }
   ],
   "tags": [
@@ -1123,11 +1123,11 @@
         }
       }
     },
-    "/devices/{deviceId}/tou": {
+    "/devices/{deviceId}/schedule": {
       "get": {
         "tags": ["Device Dispatch"],
-        "summary": "Get device TOU strategy",
-        "description": "Get the device's current Time of Use (TOU) strategy configuration. The TOU strategy is a long-term automated charging and discharging schedule that runs by daily time periods.",
+        "summary": "Get device schedule",
+        "description": "Get the device's current recurring charge and discharge schedule.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -1135,24 +1135,24 @@
         ],
         "responses": {
           "200": {
-            "description": "TOU strategy returned successfully",
+            "description": "Schedule returned successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TOU"
+                  "$ref": "#/components/schemas/DeviceSchedule"
                 }
               }
             }
           },
           "404": {
-            "description": "No TOU strategy is configured for the device"
+            "description": "No schedule is configured for the device"
           }
         }
       },
       "put": {
         "tags": ["Device Dispatch"],
-        "summary": "Set or update device TOU strategy",
-        "description": "Configure the device's time-based charging and discharging strategy.",
+        "summary": "Set device schedule",
+        "description": "Configure the device's recurring charge and discharge schedule.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -1163,14 +1163,14 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TOU"
+                "$ref": "#/components/schemas/Schedule"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "TOU configuration updated",
+            "description": "Schedule updated",
             "content": {
               "application/json": {
                 "schema": {
@@ -1178,7 +1178,7 @@
                   "properties": {
                     "message": {
                       "type": "string",
-                      "example": "TOU configuration updated"
+                      "example": "schedule updated"
                     },
                     "timestamp": {
                       "type": "string",
@@ -1205,74 +1205,18 @@
         }
       }
     },
-    "/devices/tou/query": {
+    "/devices/schedule": {
       "post": {
         "tags": ["Batch Device Dispatch"],
-        "summary": "Batch get device TOU strategies",
-        "description": "Get Time of Use (TOU) strategy configurations for multiple devices.",
+        "summary": "Batch set device schedules",
+        "description": "Configure the same recurring charge and discharge schedule for multiple devices.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["devices"],
-                "properties": {
-                  "devices": {
-                    "type": "array",
-                    "description": "List of device SNs, up to 100 devices",
-                    "minItems": 1,
-                    "maxItems": 100,
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "TOU strategies returned successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "deviceId": {
-                        "type": "string",
-                        "description": "Device ID"
-                      },
-                      "tou": {
-                        "$ref": "#/components/schemas/TOU"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          }
-        }
-      }
-    },
-    "/devices/tou": {
-      "post": {
-        "tags": ["Batch Device Dispatch"],
-        "summary": "Batch set or update device TOU strategies",
-        "description": "Configure the same Time of Use (TOU) strategy for multiple devices.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["devices", "tou"],
+                "required": ["devices", "schedule"],
                 "properties": {
                   "devices": {
                     "type": "array",
@@ -1283,8 +1227,13 @@
                       "type": "string"
                     }
                   },
-                  "tou": {
-                    "$ref": "#/components/schemas/TOU"
+                  "schedule": {
+                    "type": "array",
+                    "description": "List of scheduled periods, with at least one period required",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "#/components/schemas/SchedulePeriod"
+                    }
                   }
                 }
               }
@@ -1293,7 +1242,7 @@
         },
         "responses": {
           "200": {
-            "description": "TOU configurations updated",
+            "description": "Schedules updated",
             "content": {
               "application/json": {
                 "schema": {
@@ -1460,66 +1409,10 @@
         }
       }
     },
-    "/devices/configuration/query": {
-      "post": {
-        "tags": ["Batch Device Dispatch"],
-        "summary": "Batch get device configurations",
-        "description": "Get persistent configuration parameters for multiple devices.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["devices"],
-                "properties": {
-                  "devices": {
-                    "type": "array",
-                    "description": "List of device SNs, up to 100 devices",
-                    "minItems": 1,
-                    "maxItems": 100,
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Device configurations returned successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "deviceId": {
-                        "type": "string",
-                        "description": "Device ID"
-                      },
-                      "configuration": {
-                        "$ref": "#/components/schemas/DeviceConfiguration"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          }
-        }
-      }
-    },
     "/devices/configuration": {
       "post": {
         "tags": ["Batch Device Dispatch"],
-        "summary": "Batch update device configurations",
+        "summary": "Batch set device configurations",
         "description": "Update persistent configuration parameters for multiple devices. All configuration fields are optional; only send parameters that need to be updated.",
         "requestBody": {
           "required": true,
@@ -1636,14 +1529,10 @@
   },
   "components": {
     "securitySchemes": {
-      "OAuth2": {
-        "type": "oauth2",
-        "flows": {
-          "clientCredentials": {
-            "tokenUrl": "/oauth/token",
-            "scopes": {}
-          }
-        }
+      "AccessToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     },
     "parameters": {
@@ -2742,9 +2631,27 @@
           }
         }
       },
-      "TOU": {
+      "DeviceSchedule": {
         "type": "object",
-        "description": "Time of Use strategy configuration",
+        "description": "Device recurring charge and discharge schedule",
+        "required": ["deviceId", "schedule"],
+        "properties": {
+          "deviceId": {
+            "type": "string",
+            "description": "Device ID"
+          },
+          "schedule": {
+            "type": "array",
+            "description": "List of scheduled periods",
+            "items": {
+              "$ref": "#/components/schemas/SchedulePeriod"
+            }
+          }
+        }
+      },
+      "Schedule": {
+        "type": "object",
+        "description": "Recurring charge and discharge schedule",
         "required": ["schedule"],
         "properties": {
           "schedule": {
@@ -2752,14 +2659,14 @@
             "description": "List of scheduled periods, with at least one period required",
             "minItems": 1,
             "items": {
-              "$ref": "#/components/schemas/TOUPeriod"
+              "$ref": "#/components/schemas/SchedulePeriod"
             }
           }
         }
       },
-      "TOUPeriod": {
+      "SchedulePeriod": {
         "type": "object",
-        "description": "TOU period configuration",
+        "description": "Recurring charge or discharge period configuration",
         "required": ["startTime", "endTime", "action"],
         "properties": {
           "startTime": {
@@ -2840,7 +2747,7 @@
           "timezone": {
             "type": "string",
             "description": "Device timezone",
-            "example": "+10:00"
+            "example": "UTC+10:00"
           }
         }
       },
