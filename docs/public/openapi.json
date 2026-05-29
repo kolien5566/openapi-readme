@@ -1,0 +1,2858 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Pylontech RESS OpenAPI",
+    "version": "1.0.0",
+    "description": "Pylontech Residential Energy Storage System OpenAPI specification for VPP partners to retrieve data and control devices.",
+    "contact": {
+      "name": "Technical Support",
+      "email": "zhao.kai@pylontech.com.cn"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://openapi.pylontech.com/v1",
+      "description": "Test Environment"
+    }
+  ],
+  "security": [
+    {
+      "OAuth2": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Site Management",
+      "description": "Site information query"
+    },
+    {
+      "name": "Device Management",
+      "description": "Device information query"
+    },
+    {
+      "name": "Telemetry Data",
+      "description": "Latest and historical telemetry data query"
+    },
+    {
+      "name": "Energy Statistics",
+      "description": "Energy statistics data aggregated by period (day/month/year)"
+    },
+    {
+      "name": "Fault & Alarm",
+      "description": "Fault and alarm information query"
+    },
+    {
+      "name": "Device Dispatch",
+      "description": "Command and device configuration"
+    }
+  ],
+  "paths": {
+    "/sites": {
+      "get": {
+        "tags": ["Site Management"],
+        "summary": "Get site list",
+        "description": "Get list of all authorized sites, supports pagination",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            },
+            "description": "Page number"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 500
+            },
+            "description": "Items per page"
+          },
+          {
+            "name": "online",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filter online/offline sites"
+          },
+          {
+            "name": "faultStatus",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["normal", "fault"]
+            },
+            "description": "Filter by fault status: Normal, Fault"
+          },
+          {
+            "name": "includeDevices",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Whether to include device details, default true"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Site list returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Site Management"],
+        "summary": "Bind site authorization",
+        "description": "Authorize specified site for current client access.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["siteId"],
+                "properties": {
+                  "siteId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Site ID to authorize",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "onboarding success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "onboarding success"
+                    },
+                    "siteId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Site not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Site already authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sites/{siteId}": {
+      "get": {
+        "tags": ["Site Management"],
+        "summary": "Get site details",
+        "description": "Get detailed information of specified site, including all devices under the site",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SiteId"
+          },
+          {
+            "name": "includeDevices",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "description": "Whether to include device details, default true"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Site details and device list returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Site Management"],
+        "summary": "Unbind site authorization",
+        "description": "Remove current client's access authorization to specified site",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SiteId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "offboarding success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "offboarding success"
+                    },
+                    "siteId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Site not found or not authorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices": {
+      "get": {
+        "tags": ["Device Management"],
+        "summary": "Get all devices list",
+        "description": "Get flattened list of all devices across all sites under current account, supports pagination and filtering. Convenient for VPP batch dispatch.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            },
+            "description": "Page number"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 500
+            },
+            "description": "Items per page"
+          },
+          {
+            "name": "online",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filter online/offline devices"
+          },
+          {
+            "name": "faultStatus",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["normal", "fault"]
+            },
+            "description": "Filter by fault status: Normal, Fault"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device list returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/devices/{deviceId}": {
+      "get": {
+        "tags": ["Device Management"],
+        "summary": "Get device details",
+        "description": "Get detailed information of specified device (static parameters)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device details returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Device"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sites/{siteId}/latestData": {
+      "get": {
+        "tags": ["Telemetry Data"],
+        "summary": "Get site latest telemetry data",
+        "description": "Get site-level latest telemetry data, including meter readings and aggregated data",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SiteId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Site latest telemetry data returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteTelemetry"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sites/latestData/query": {
+      "post": {
+        "tags": ["Telemetry Data"],
+        "summary": "Batch get site latest telemetry data",
+        "description": "Get the latest telemetry data for multiple sites.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["sites"],
+                "properties": {
+                  "sites": {
+                    "type": "array",
+                    "description": "List of site IDs, up to 100 sites",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Site latest telemetry data returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SiteTelemetry"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/devices/{deviceId}/latestData": {
+      "get": {
+        "tags": ["Telemetry Data"],
+        "summary": "Get device latest telemetry data",
+        "description": "Get device's latest telemetry data",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device latest telemetry data returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceTelemetry"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/devices/latestData/query": {
+      "post": {
+        "tags": ["Telemetry Data"],
+        "summary": "Batch get device latest telemetry data",
+        "description": "Get the latest telemetry data for multiple devices.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["devices"],
+                "properties": {
+                  "devices": {
+                    "type": "array",
+                    "description": "List of device SNs, up to 100 devices",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Device latest telemetry data returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceTelemetry"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/devices/{deviceId}/historicalData": {
+      "get": {
+        "tags": ["Telemetry Data"],
+        "summary": "Get device historical telemetry data",
+        "description": "Get device historical telemetry data (maximum 30 days query)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          },
+          {
+            "name": "startTime",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Start time (ISO 8601 format, UTC)"
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "End time (ISO 8601 format, UTC), maximum 30 days query"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            },
+            "description": "Page number"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 500
+            },
+            "description": "Items per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device historical telemetry data returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceTelemetryHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/sites/{siteId}/energy": {
+      "get": {
+        "tags": ["Energy Statistics"],
+        "summary": "Get site energy statistics",
+        "description": "Get site energy data aggregated by period, for long-term trend analysis and reconciliation. Supports aggregation by day, month, year",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/SiteId"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["day", "month", "year"]
+            },
+            "description": "Statistics period: By day, By month, By year"
+          },
+          {
+            "$ref": "#/components/parameters/StartDate"
+          },
+          {
+            "$ref": "#/components/parameters/EndDate"
+          },
+          {
+            "name": "includeDevices",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Whether to include energy details for each device (default false to optimize performance)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Energy statistics data returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnergyStatistics"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/devices/{deviceId}/energy": {
+      "get": {
+        "tags": ["Energy Statistics"],
+        "summary": "Get device energy statistics",
+        "description": "Get device energy data aggregated by period. Supports aggregation by day, month, year",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["day", "month", "year"]
+            },
+            "description": "Statistics period: By day, By month, By year"
+          },
+          {
+            "$ref": "#/components/parameters/StartDate"
+          },
+          {
+            "$ref": "#/components/parameters/EndDate"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Energy statistics data returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceEnergyStatistics"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/devices/{deviceId}/alarms": {
+      "get": {
+        "tags": ["Fault & Alarm"],
+        "summary": "Get device fault and alarm list",
+        "description": "Get fault and alarm information of specified device, maximum 30 days, supports pagination",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          },
+          {
+            "$ref": "#/components/parameters/AlarmLevel"
+          },
+          {
+            "$ref": "#/components/parameters/AlarmStatus"
+          },
+          {
+            "$ref": "#/components/parameters/StartTime"
+          },
+          {
+            "$ref": "#/components/parameters/EndTime"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            },
+            "description": "Page number"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 500
+            },
+            "description": "Items per page"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Alarm list returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlarmListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/device/{deviceId}/commands": {
+      "get": {
+        "tags": ["Device Dispatch"],
+        "summary": "Get device command history list",
+        "description": "Get device command instruction history, kept for maximum 30 days",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            },
+            "description": "Page number (default 1)"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 500
+            },
+            "description": "Items per page"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["received", "executing", "completed", "cancelled"]
+            },
+            "description": "Filter by status"
+          },
+          {
+            "name": "startTime",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Start time"
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "End time (ISO 8601 format, UTC)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Command list returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandListResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Device Dispatch"],
+        "summary": "Send device command",
+        "description": "Send power dispatch command to single device",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommandRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Command instruction received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "422": {
+            "description": "Instruction parameters exceed device capability range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/commands": {
+      "post": {
+        "tags": ["Device Dispatch"],
+        "summary": "Batch send device commands",
+        "description": "Send the same power dispatch command to multiple devices and return a batch command ID for tracking or cancellation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["devices", "command"],
+                "properties": {
+                  "devices": {
+                    "type": "array",
+                    "description": "List of device SNs, up to 100 devices",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "command": {
+                    "$ref": "#/components/schemas/CommandRequest"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Batch command instruction received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batchCommandId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "description": "System generated batch command ID"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Batch command received"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "422": {
+            "description": "Instruction parameters exceed device capability range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/commands/{batchCommandId}/cancel": {
+      "put": {
+        "tags": ["Device Dispatch"],
+        "summary": "Cancel batch command",
+        "description": "Cancel executing or pending commands created by a batch command instruction.",
+        "parameters": [
+          {
+            "name": "batchCommandId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Batch command ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batch command cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Batch command cancelled"
+                    },
+                    "batchCommandId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "deviceId": {
+                            "type": "string",
+                            "description": "Device ID"
+                          },
+                          "commandId": {
+                            "type": "string",
+                            "format": "uuid",
+                            "description": "Command ID"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["cancelled", "failed"]
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Data timestamp (UTC)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Batch command already completed, cannot cancel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/{deviceId}/commands/{commandId}": {
+      "get": {
+        "tags": ["Device Dispatch"],
+        "summary": "Query command execution status",
+        "description": "Query execution status of specified command instruction",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          },
+          {
+            "name": "commandId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Command ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Command status returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandStatus"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/devices/{deviceId}/commands/{commandId}/cancel": {
+      "put": {
+        "tags": ["Device Dispatch"],
+        "summary": "Cancel command instruction",
+        "description": "Cancel executing or pending command instruction",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          },
+          {
+            "name": "commandId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Command ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Command cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Command cancelled"
+                    },
+                    "commandId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Data timestamp (UTC)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Command already completed, cannot cancel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/{deviceId}/tou": {
+      "get": {
+        "tags": ["Device Dispatch"],
+        "summary": "Get device TOU strategy",
+        "description": "Get the device's current Time of Use (TOU) strategy configuration. The TOU strategy is a long-term automated charging and discharging schedule that runs by daily time periods.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "TOU strategy returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TOU"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No TOU strategy is configured for the device"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Device Dispatch"],
+        "summary": "Set or update device TOU strategy",
+        "description": "Configure the device's time-based charging and discharging strategy.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TOU"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "TOU configuration updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "TOU configuration updated"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parameter error, such as overlapping periods or an invalid SOC range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Strategy parameters exceed device capability range"
+          }
+        }
+      }
+    },
+    "/devices/tou/query": {
+      "post": {
+        "tags": ["Device Dispatch"],
+        "summary": "Batch get device TOU strategies",
+        "description": "Get Time of Use (TOU) strategy configurations for multiple devices.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["devices"],
+                "properties": {
+                  "devices": {
+                    "type": "array",
+                    "description": "List of device SNs, up to 100 devices",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "TOU strategies returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deviceId": {
+                        "type": "string",
+                        "description": "Device ID"
+                      },
+                      "tou": {
+                        "$ref": "#/components/schemas/TOU"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/devices/tou": {
+      "post": {
+        "tags": ["Device Dispatch"],
+        "summary": "Batch set or update device TOU strategies",
+        "description": "Configure the same Time of Use (TOU) strategy for multiple devices.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["devices", "tou"],
+                "properties": {
+                  "devices": {
+                    "type": "array",
+                    "description": "List of device SNs, up to 100 devices",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "tou": {
+                    "$ref": "#/components/schemas/TOU"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "TOU configurations updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "deviceId": {
+                            "type": "string",
+                            "description": "Device ID"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["success", "failed"]
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parameter error, such as overlapping periods or an invalid SOC range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Strategy parameters exceed device capability range"
+          }
+        }
+      }
+    },
+    "/devices/{deviceId}/configuration": {
+      "get": {
+        "tags": ["Device Dispatch"],
+        "summary": "Get device configuration",
+        "description": "Get device persistent configuration parameters (long-term effective settings such as operation mode)",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device configuration returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceConfiguration"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Device Dispatch"],
+        "summary": "Update device configuration",
+        "description": "Update device persistent configuration parameters. All fields are optional, only send parameters that need to be updated, unchanged parameters remain as is. Multiple parameters can be updated at once.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceConfiguration"
+              },
+              "examples": {
+                "singleParam": {
+                  "summary": "Set operation mode only",
+                  "value": {
+                    "operationMode": "selfConsumption"
+                  }
+                },
+                "multipleParams": {
+                  "summary": "Set multiple parameters simultaneously",
+                  "value": {
+                    "operationMode": "selfConsumption",
+                    "exportLimitW": 2000
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Configuration updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "configuration updated"
+                    },
+                    "updated": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      },
+                      "description": "List of fields updated this time",
+                      "example": {
+                        "operationMode": "selfConsumption"
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parameter error or parameter conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "description": "Parameter value exceeds device capability range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/configuration/query": {
+      "post": {
+        "tags": ["Device Dispatch"],
+        "summary": "Batch get device configurations",
+        "description": "Get persistent configuration parameters for multiple devices.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["devices"],
+                "properties": {
+                  "devices": {
+                    "type": "array",
+                    "description": "List of device SNs, up to 100 devices",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Device configurations returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deviceId": {
+                        "type": "string",
+                        "description": "Device ID"
+                      },
+                      "configuration": {
+                        "$ref": "#/components/schemas/DeviceConfiguration"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/devices/configuration": {
+      "post": {
+        "tags": ["Device Dispatch"],
+        "summary": "Batch update device configurations",
+        "description": "Update persistent configuration parameters for multiple devices. All configuration fields are optional; only send parameters that need to be updated.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["devices", "configuration"],
+                "properties": {
+                  "devices": {
+                    "type": "array",
+                    "description": "List of device SNs, up to 100 devices",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "configuration": {
+                    "$ref": "#/components/schemas/DeviceConfiguration"
+                  }
+                }
+              },
+              "examples": {
+                "setOperationMode": {
+                  "summary": "Set operation mode for multiple devices",
+                  "value": {
+                    "devices": ["SN001", "SN002"],
+                    "configuration": {
+                      "operationMode": "selfConsumption"
+                    }
+                  }
+                },
+                "setMultipleParameters": {
+                  "summary": "Set multiple parameters for multiple devices",
+                  "value": {
+                    "devices": ["SN001", "SN002"],
+                    "configuration": {
+                      "operationMode": "selfConsumption",
+                      "siteExportLimitW": 2000
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Configurations updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "deviceId": {
+                            "type": "string",
+                            "description": "Device ID"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["success", "failed"]
+                          },
+                          "updated": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "List of fields updated for this device"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parameter error or parameter conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Parameter value exceeds device capability range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "OAuth2": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "/oauth/token",
+            "scopes": {}
+          }
+        }
+      }
+    },
+    "parameters": {
+      "SiteId": {
+        "name": "siteId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "description": "Site ID"
+      },
+      "DeviceId": {
+        "name": "deviceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "description": "Device ID"
+      },
+      "StartTime": {
+        "name": "startTime",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description": "Start time (ISO 8601 format, UTC)"
+      },
+      "EndTime": {
+        "name": "endTime",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description": "End time (ISO 8601 format, UTC)"
+      },
+      "StartDate": {
+        "name": "startDate",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "date"
+        },
+        "description": "Start date (YYYY-MM-DD format)"
+      },
+      "EndDate": {
+        "name": "endDate",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "date"
+        },
+        "description": "End date (YYYY-MM-DD format)"
+      },
+      "AlarmLevel": {
+        "name": "alarmLevel",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": ["fault", "alarm", "notice"]
+        },
+        "description": "Alarm type: Fault, Alarm, Notice"
+      },
+      "AlarmStatus": {
+        "name": "status",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": ["active", "resolved"]
+        },
+        "description": "Alarm status: Active, Resolved"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Unauthorized - Token invalid or expired",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Invalid request parameters",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "Access token"
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Refresh token"
+          },
+          "tokenType": {
+            "type": "string",
+            "example": "Bearer"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "description": "Token validity period (seconds)",
+            "example": 3600
+          }
+        }
+      },
+      "Site": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Site unique identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "Site name"
+          },
+          "countryCode": {
+            "type": "string",
+            "description": "Country code (ISO 3166-1 alpha-2), such as CN, US, DE, JP"
+          },
+          "address": {
+            "type": "string",
+            "description": "Full address"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Timezone",
+            "example": "UTC+8:00"
+          },
+          "installDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Installation date"
+          },
+          "gridMeterId": {
+            "type": "string",
+            "description": "Grid meter ID provided by utility company, e.g. NMI in Australia, MPRN in UK"
+          },
+          "gridConnectionPhaseType": {
+            "type": "string",
+            "enum": ["singlePhase", "threePhase"],
+            "description": "Grid connection type: Single phase or Three phase"
+          },
+          "gridCode": {
+            "type": "string",
+            "description": "Grid standard/safety code (VDE-AR-N 4105, G99, NB/T 32004)"
+          },
+          "owner": {
+            "type": "string",
+            "description": "Owner"
+          },
+          "totalPvCapacityKw": {
+            "type": "number",
+            "format": "double",
+            "description": "Total PV installed capacity (kW)"
+          },
+          "totalBatteryCapacityKwh": {
+            "type": "number",
+            "format": "double",
+            "description": "Total battery storage capacity (kWh)"
+          },
+          "totalRatedPowerKw": {
+            "type": "number",
+            "format": "double",
+            "description": "Total rated active power of all inverters (kW)"
+          },
+          "totalMaxChargePowerKw": {
+            "type": "number",
+            "format": "double",
+            "description": "Site total maximum charge power (kW)"
+          },
+          "totalMaxDischargePowerKw": {
+            "type": "number",
+            "format": "double",
+            "description": "Site total maximum discharge power (kW)"
+          },
+          "totalMaxReactivePowerKvar": {
+            "type": "number",
+            "format": "double",
+            "description": "Total maximum reactive power (kvar, positive=export/inductive, negative=absorb/capacitive)"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "faultStatus": {
+            "type": "string",
+            "enum": ["normal", "fault"],
+            "description": "Fault status"
+          },
+          "devices": {
+            "type": "array",
+            "description": "List of devices under the site (returned when includeDevices=true)",
+            "items": {
+              "$ref": "#/components/schemas/Device"
+            }
+          }
+        }
+      },
+      "SiteDetail": {
+        "type": "object",
+        "description": "Site details (includes device list)",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Site"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "devices": {
+                "type": "array",
+                "description": "All devices under the site",
+                "items": {
+                  "$ref": "#/components/schemas/Device"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "SiteListResponse": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Total count"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "size": {
+            "type": "integer"
+          },
+          "sites": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Site"
+            }
+          }
+        }
+      },
+      "DeviceListResponse": {
+        "type": "object",
+        "description": "Device list response (flattened list of devices from all sites)",
+        "properties": {
+          "total": {
+            "type": "integer",
+            "description": "Total device count"
+          },
+          "page": {
+            "type": "integer",
+            "description": "Current page number"
+          },
+          "size": {
+            "type": "integer",
+            "description": "Items per page"
+          },
+          "devices": {
+            "type": "array",
+            "description": "Device list",
+            "items": {
+              "$ref": "#/components/schemas/Device"
+            }
+          }
+        }
+      },
+      "Device": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Device unique identifier"
+          },
+          "siteId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Parent site ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "Device name"
+          },
+          "phaseType": {
+            "type": "string",
+            "enum": ["singlePhase", "threePhase"],
+            "description": "Device phase type: Single phase or Three phase"
+          },
+          "model": {
+            "type": "string",
+            "description": "Device model"
+          },
+          "serialNumber": {
+            "type": "string",
+            "description": "Device serial number"
+          },
+          "ratedPowerKw": {
+            "type": "number",
+            "format": "double",
+            "description": "Rated power (kW)"
+          },
+          "maxReactivePowerKvar": {
+            "type": "number",
+            "format": "double",
+            "description": "Maximum reactive power (kvar, positive=export/inductive, negative=absorb/capacitive)"
+          },
+          "pvCapacityKw": {
+            "type": "number",
+            "format": "double",
+            "description": "PV installed capacity (kW)"
+          },
+          "batteryCapacityKwh": {
+            "type": "number",
+            "format": "double",
+            "description": "Battery installed capacity (kWh, energy storage devices only)"
+          },
+          "maxChargePowerKw": {
+            "type": "number",
+            "format": "double",
+            "description": "Maximum charge power (kW, energy storage devices only)"
+          },
+          "maxDischargePowerKw": {
+            "type": "number",
+            "format": "double",
+            "description": "Maximum discharge power (kW, energy storage devices only)"
+          },
+          "installDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Installation date"
+          },
+          "online": {
+            "type": "boolean",
+            "description": "Is device online"
+          },
+          "faultStatus": {
+            "type": "string",
+            "enum": ["normal", "fault"],
+            "description": "Fault status"
+          }
+        }
+      },
+      "SiteTelemetry": {
+        "type": "object",
+        "description": "Site latest telemetry data",
+        "properties": {
+          "siteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "devices": {
+            "type": "array",
+            "description": "Detailed telemetry data of all devices under the site",
+            "items": {
+              "$ref": "#/components/schemas/DeviceTelemetry"
+            }
+          }
+        }
+      },
+      "SiteTelemetryHistory": {
+        "type": "object",
+        "description": "Site historical telemetry data (multiple records)",
+        "properties": {
+          "siteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Query start time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Query end time"
+          },
+          "data": {
+            "type": "array",
+            "description": "Historical data points list",
+            "items": {
+              "$ref": "#/components/schemas/SiteTelemetry"
+            }
+          }
+        }
+      },
+      "DeviceTelemetry": {
+        "type": "object",
+        "description": "Device latest telemetry data",
+        "properties": {
+          "deviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data timestamp (UTC)"
+          },
+          "meter": {
+            "type": "object",
+            "description": "Meter data",
+            "properties": {
+              "gridPowerKw": {
+                "type": "number",
+                "format": "double",
+                "description": "Grid power (kW, positive=import, negative=export)"
+              },
+              "gridReactivePowerKvar": {
+                "type": "number",
+                "format": "double",
+                "description": "Grid reactive power (kvar, positive=export, negative=absorb)"
+              },
+              "gridFrequencyHz": {
+                "type": "number",
+                "format": "double",
+                "description": "Grid frequency (Hz)"
+              },
+              "phaseAVoltageV": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase A voltage (V)"
+              },
+              "phaseBVoltageV": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase B voltage (V, null for single-phase system)"
+              },
+              "phaseCVoltageV": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase C voltage (V, null for single-phase system)"
+              },
+              "phaseACurrentA": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase A current (A)"
+              },
+              "phaseBCurrentA": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase B current (A, null for single-phase system)"
+              },
+              "phaseCCurrentA": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase C current (A, null for single-phase system)"
+              },
+              "cumulativeGridImportKwh": {
+                "type": "number",
+                "format": "double",
+                "description": "Cumulative grid import energy (kWh)"
+              },
+              "cumulativeGridExportKwh": {
+                "type": "number",
+                "format": "double",
+                "description": "Cumulative grid export energy (kWh)"
+              }
+            }
+          },
+          "inverter": {
+            "type": "object",
+            "description": "Inverter data (all device types have this)",
+            "properties": {
+              "powerKw": {
+                "type": "number",
+                "format": "double",
+                "description": "Inverter total power (kW)"
+              },
+              "reactivePowerKvar": {
+                "type": "number",
+                "format": "double",
+                "description": "Reactive power (kvar, positive=export, negative=absorb)"
+              },
+              "gridFrequencyHz": {
+                "type": "number",
+                "format": "double",
+                "description": "Grid frequency (Hz)"
+              },
+              "phaseAVoltageV": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase A voltage (V)"
+              },
+              "phaseBVoltageV": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase B voltage (V)"
+              },
+              "phaseCVoltageV": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase C voltage (V)"
+              },
+              "phaseACurrentA": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase A current (A)"
+              },
+              "phaseBCurrentA": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase B current (A)"
+              },
+              "phaseCCurrentA": {
+                "type": "number",
+                "format": "double",
+                "description": "Phase C current (A)"
+              },
+              "cumulativeGenerationKwh": {
+                "type": "number",
+                "format": "double",
+                "description": "Cumulative generation (kWh)"
+              },
+              "cumulativeConsumptionKwh": {
+                "type": "number",
+                "format": "double",
+                "description": "Cumulative consumption (kWh)"
+              },
+              "temperatureC": {
+                "type": "number",
+                "format": "double",
+                "description": "Temperature (°C)"
+              }
+            }
+          },
+          "battery": {
+            "type": "object",
+            "description": "Battery data (battery inverter and hybrid inverter)",
+            "properties": {
+              "socPercent": {
+                "type": "number",
+                "format": "integer",
+                "description": "Battery state of charge (%)"
+              },
+              "sohPercent": {
+                "type": "number",
+                "format": "integer",
+                "description": "Battery state of health (%)"
+              },
+              "voltageV": {
+                "type": "number",
+                "format": "double",
+                "description": "Battery total voltage (V)"
+              },
+              "currentA": {
+                "type": "number",
+                "format": "double",
+                "description": "Battery total current (A, positive=discharge, negative=charge)"
+              },
+              "powerKw": {
+                "type": "number",
+                "format": "double",
+                "description": "Battery power (kW, positive=discharge, negative=charge)"
+              },
+              "cumulativeChargeKwh": {
+                "type": "number",
+                "format": "double",
+                "description": "Cumulative charge (kWh)"
+              },
+              "cumulativeDischargeKwh": {
+                "type": "number",
+                "format": "double",
+                "description": "Cumulative discharge (kWh)"
+              },
+              "temperatureC": {
+                "type": "number",
+                "format": "double",
+                "description": "Temperature (°C)"
+              }
+            }
+          },
+          "pv": {
+            "type": "object",
+            "description": "PV data",
+            "properties": {
+              "powerKw": {
+                "type": "number",
+                "format": "double",
+                "description": "PV total power (kW)"
+              },
+              "cumulativeGenerationKwh": {
+                "type": "number",
+                "format": "double",
+                "description": "Cumulative PV generation (kWh)"
+              }
+            }
+          },
+          "thirdPartyPv": {
+            "type": "object",
+            "description": "Third party PV data",
+            "properties": {
+              "powerKw": {
+                "type": "number",
+                "format": "double",
+                "description": "PV total power (kW)"
+              },
+              "cumulativeGenerationKwh": {
+                "type": "number",
+                "format": "double",
+                "description": "Cumulative PV generation (kWh)"
+              }
+            }
+          }
+        }
+      },
+      "DeviceTelemetryHistory": {
+        "type": "object",
+        "description": "Device historical telemetry data (multiple records)",
+        "properties": {
+          "deviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeviceTelemetry"
+            }
+          }
+        }
+      },
+      "EnergyStatistics": {
+        "type": "object",
+        "description": "Site energy statistics (supports day/month/year aggregation)",
+        "properties": {
+          "siteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "period": {
+            "type": "string",
+            "enum": ["day", "month", "year"],
+            "description": "Statistics period"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Query start date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Query end date"
+          },
+          "data": {
+            "type": "array",
+            "description": "Data points aggregated by period",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "description": "Date identifier. Format varies by period: day='2025-10-11', month='2025-10', year='2025'",
+                  "example": "2025-10-11"
+                },
+                "totalChargeKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Total charge (kWh)"
+                },
+                "totalDischargeKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Total discharge (kWh)"
+                },
+                "totalPvGenerationKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Total PV generation (kWh)"
+                },
+                "totalLoadConsumptionKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Total load consumption (kWh)"
+                },
+                "gridImportKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Grid import energy (kWh)"
+                },
+                "gridExportKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Grid export energy (kWh)"
+                },
+                "devices": {
+                  "type": "array",
+                  "description": "Energy data for each device (returned when includeDevices=true)",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "deviceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Device ID"
+                      },
+                      "batteryChargeKwh": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Battery charge (kWh)"
+                      },
+                      "batteryDischargeKwh": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Battery discharge (kWh)"
+                      },
+                      "pvGenerationKwh": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "PV generation (kWh)"
+                      },
+                      "inverterGenerationKwh": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "PCS generation (kWh)"
+                      },
+                      "inverterConsumptionKwh": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "PCS consumption (kWh)"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "DeviceEnergyStatistics": {
+        "type": "object",
+        "description": "Device energy statistics (supports day/month/year aggregation)",
+        "properties": {
+          "deviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "period": {
+            "type": "string",
+            "enum": ["day", "month", "year"],
+            "description": "Statistics period"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Query start date"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "description": "Query end date"
+          },
+          "data": {
+            "type": "array",
+            "description": "Data points aggregated by period",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "description": "Date identifier. Format varies by period: day='2025-10-11', month='2025-10', year='2025'",
+                  "example": "2025-10-11"
+                },
+                "batteryChargeKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Battery charge (kWh)"
+                },
+                "batteryDischargeKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Battery discharge (kWh)"
+                },
+                "pvGenerationKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "PV generation (kWh)"
+                },
+                "inverterGenerationKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "PCS generation (kWh)"
+                },
+                "inverterConsumptionKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "PCS consumption (kWh)"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Alarm": {
+        "type": "object",
+        "properties": {
+          "alarmLevel": {
+            "type": "string",
+            "enum": ["fault", "alarm", "notice"],
+            "description": "Alarm type"
+          },
+          "alarmCode": {
+            "type": "string",
+            "description": "Alarm code"
+          },
+          "alarmName": {
+            "type": "string",
+            "description": "Alarm name",
+            "example": "Battery Temperature High"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "resolved"],
+            "description": "Alarm status"
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Alarm occurrence time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Alarm resolution time (null when not resolved)"
+          }
+        }
+      },
+      "AlarmListResponse": {
+        "type": "object",
+        "properties": {
+          "deviceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Device ID"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total alarm count"
+          },
+          "page": {
+            "type": "integer",
+            "description": "Current page number"
+          },
+          "size": {
+            "type": "integer",
+            "description": "Items per page"
+          },
+          "alarms": {
+            "type": "array",
+            "description": "Alarm list",
+            "items": {
+              "$ref": "#/components/schemas/Alarm"
+            }
+          }
+        }
+      },
+      "CommandRequest": {
+        "type": "object",
+        "required": [
+          "activePowerControl",
+          "reactivePowerControl",
+          "startTime",
+          "endTime"
+        ],
+        "properties": {
+          "activePowerControl": {
+            "type": "object",
+            "description": "Active power control",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "batteryPowerTargetW",
+                  "activePowerTargetW",
+                  "gridExportPowerLimitW",
+                  "gridImportPowerLimitW"
+                ],
+                "description": "Active power control mode: Battery constant power charge/discharge, Inverter AC side target active power, Grid export power limit, Grid import power limit"
+              },
+              "value": {
+                "type": "number",
+                "format": "integer",
+                "description": "Target value"
+              }
+            }
+          },
+          "reactivePowerControl": {
+            "type": "object",
+            "description": "Reactive power control",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": ["reactivePowerTargetVar", "fixedPowerFactorPercent"],
+                "description": "Reactive power control mode: Target reactive power, Fixed power factor"
+              },
+              "value": {
+                "type": "number",
+                "format": "integer",
+                "description": "Target value"
+              }
+            }
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Start time (ISO 8601 format, UTC)"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "End time (ISO 8601 format, UTC)"
+          }
+        }
+      },
+      "CommandResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "System generated command ID"
+          },
+          "message": {
+            "type": "string",
+            "description": "Message"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CommandStatus": {
+        "type": "object",
+        "description": "Command instruction detailed status",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Command instruction ID"
+          },
+          "deviceId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Device ID"
+          },
+          "activePowerControl": {
+            "type": "object",
+            "description": "Active power control",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "batteryPowerTargetW",
+                  "activePowerTargetW",
+                  "gridExportPowerLimitW"
+                ],
+                "description": "Active power control mode: Battery constant power charge/discharge, Inverter AC side target active power, Grid export power limit"
+              },
+              "value": {
+                "type": "number",
+                "format": "integer",
+                "description": "Target value"
+              }
+            }
+          },
+          "reactivePowerControl": {
+            "type": "object",
+            "description": "Reactive power control",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": ["reactivePowerTargetVar", "fixedPowerFactorPercent"],
+                "description": "Reactive power control mode: Target reactive power, Fixed power factor"
+              },
+              "value": {
+                "type": "number",
+                "format": "integer",
+                "description": "Target value"
+              }
+            }
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Execution start time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Execution end time"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["received", "executing", "completed", "cancelled"],
+            "description": "Execution status: received=Received, executing=Executing, completed=Completed, cancelled=Cancelled"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time when instruction was received"
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time when instruction was cancelled"
+          },
+          "cancellReason": {
+            "type": "string",
+            "enum": [
+              "manuallyCancel",
+              "timeWindowOverlap",
+              "startTimeExpire",
+              "deviceFault",
+              "notSupported"
+            ],
+            "description": "Cancellation reason: Manually cancelled, Time window overlap, Start time expired, Device fault, Not supported"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time when execution started"
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Time when execution completed"
+          }
+        }
+      },
+      "CommandListResponse": {
+        "type": "object",
+        "description": "Command history list response",
+        "properties": {
+          "deviceId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total count"
+          },
+          "page": {
+            "type": "integer",
+            "description": "Current page number"
+          },
+          "size": {
+            "type": "integer",
+            "description": "Items per page"
+          },
+          "commands": {
+            "type": "array",
+            "description": "Command list",
+            "items": {
+              "$ref": "#/components/schemas/CommandStatus"
+            }
+          }
+        }
+      },
+      "TOU": {
+        "type": "object",
+        "description": "Time of Use strategy configuration",
+        "required": ["schedule"],
+        "properties": {
+          "schedule": {
+            "type": "array",
+            "description": "List of scheduled periods, with at least one period required",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/TOUPeriod"
+            }
+          }
+        }
+      },
+      "TOUPeriod": {
+        "type": "object",
+        "description": "TOU period configuration",
+        "required": ["startTime", "endTime", "action"],
+        "properties": {
+          "startTime": {
+            "type": "string",
+            "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
+            "example": "00:00",
+            "description": "Start time in HH:MM format, local time, 24-hour clock"
+          },
+          "endTime": {
+            "type": "string",
+            "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
+            "example": "06:00",
+            "description": "End time in HH:MM format, local time, 24-hour clock"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["charge", "discharge", "standby"],
+            "description": "Action type: charge, discharge, or standby with no charging or discharging"
+          },
+          "targetBatteryPowerW": {
+            "type": "number",
+            "format": "integer",
+            "description": "Target power in W. Discharging is positive and charging is negative."
+          },
+          "daysOfWeek": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 7
+            },
+            "description": "Effective weekdays, where 1 is Monday and 7 is Sunday. Empty or null means every day.",
+            "example": [1, 2, 3, 4, 5]
+          }
+        }
+      },
+      "DeviceConfiguration": {
+        "type": "object",
+        "description": "Device persistent configuration (long-term effective settings). GET interface returns complete configuration, PUT interface for update all fields are optional, only send parameters that need to be updated.",
+        "properties": {
+          "operationMode": {
+            "type": "string",
+            "enum": ["selfConsumption", "feedInPriority", "backupMode"],
+            "description": "Operation mode: Self-consumption, Feed-in priority, Backup mode"
+          },
+          "chargeCutoffSocPercent": {
+            "type": "integer",
+            "description": "Charge Maximum SOC Limit (%), will not charge exceed this value",
+            "minimum": 50,
+            "maximum": 100,
+            "example": 95
+          },
+          "dischargeCutoffSocPercent": {
+            "type": "integer",
+            "description": "Discharge Minimum SOC Limit (%), will not discharge below this value",
+            "minimum": 5,
+            "maximum": 100,
+            "example": 10
+          },
+          "siteImportLimitW": {
+            "type": "integer",
+            "description": "Site import limit in W",
+            "minimum": 0,
+            "maximum": 1000000,
+            "example": 1000
+          },
+          "siteExportLimitW": {
+            "type": "integer",
+            "description": "Site export limit in W",
+            "minimum": 0,
+            "maximum": 1000000,
+            "example": 1000
+          },
+          "samplingRate": {
+            "type": "integer",
+            "enum": [60, 300]
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Device timezone",
+            "example": "+10:00"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "errorCode": {
+            "type": "string",
+            "description": "Error code"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}

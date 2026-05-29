@@ -1,0 +1,14 @@
+{
+  "name": "pylontech-api-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs --host 127.0.0.1 --port 5173",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs --host 127.0.0.1 --port 4173"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4",
+    "vitepress-openapi": "^0.2.0"
+  }
+}
