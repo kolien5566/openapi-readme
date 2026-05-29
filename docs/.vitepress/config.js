@@ -4,51 +4,49 @@ import spec from '../public/openapi.json' with { type: 'json' }
 
 const openapiSidebar = useSidebar({ spec })
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+}
+
+function sidebarOperationItem({ method, title, path }) {
+  const verb = method.toUpperCase()
+  const label = escapeHtml(title || path)
+
+  return `<span class="api-method-item"><span class="api-method-badge api-method-${verb.toLowerCase()}">${verb}</span> <span class="api-method-title">${label}</span></span>`
+}
+
 export default defineConfig({
-  title: 'Pylontech RESS OpenAPI',
+  title: 'Pylontech OpenAPI',
   description: 'Partner API documentation and operating procedures',
   cleanUrls: true,
-  lastUpdated: true,
+  lastUpdated: false,
+  appearance: false,
+  head: [
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+  ],
   themeConfig: {
     logo: '/logo.svg',
     siteTitle: false,
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
-      { text: 'API Reference', link: '/operations/get-sites' },
+      { text: 'API Reference', link: '/api-reference/get-sites' },
       { text: 'OpenAPI JSON', link: '/openapi.json' },
     ],
-    search: {
-      provider: 'local',
-    },
+    search: false,
     sidebar: {
       '/guide/': [
-        {
-          text: 'SOP',
-          items: [
-            { text: 'Getting Started', link: '/guide/getting-started' },
-            { text: 'Authentication', link: '/guide/authentication' },
-            { text: 'Go-Live Checklist', link: '/guide/go-live-checklist' },
-          ],
-        },
+        { text: 'Getting Started', link: '/guide/getting-started' },
+        { text: 'Authentication', link: '/guide/authentication' },
       ],
-      '/operations/': [
-        {
-          text: 'SOP',
-          items: [
-            { text: 'Getting Started', link: '/guide/getting-started' },
-            { text: 'Authentication', link: '/guide/authentication' },
-          ],
-        },
-        {
-          text: 'API Reference',
-          items: openapiSidebar.itemsByTags({
-            collapsible: true,
-            collapsed: false,
-            linkPrefix: '/operations/',
-            sidebarItemTemplate: ({ method, title, path }) =>
-              `${method.toUpperCase()} ${title || path}`,
-          }),
-        },
+      '/api-reference/': [
+        ...openapiSidebar.generateSidebarGroups({
+          linkPrefix: '/api-reference/',
+          sidebarItemTemplate: sidebarOperationItem,
+        }),
       ],
     },
     outline: {
@@ -57,8 +55,8 @@ export default defineConfig({
     },
     socialLinks: [],
     footer: {
-      message: 'Pylontech partner API documentation.',
-      copyright: 'Copyright © Pylontech',
+      message: '',
+      copyright: 'Copyright @ Pylon Technologies Co., Ltd. All rights reserved.',
     },
   },
 })

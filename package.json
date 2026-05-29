@@ -5,9 +5,11 @@
   "scripts": {
     "dev": "vitepress dev docs --host 127.0.0.1 --port 5173",
     "build": "vitepress build docs",
-    "preview": "vitepress preview docs --host 127.0.0.1 --port 4173"
+    "preview": "vitepress preview docs --host 127.0.0.1 --port 4173",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "vitepress": "^1.6.4",
     "vitepress-openapi": "^0.2.0"
   }
