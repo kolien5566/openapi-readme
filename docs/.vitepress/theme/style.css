@@ -42,18 +42,27 @@
   }
 }
 
-.VPDoc.home {
+.VPContent:has(.api-hero) {
   min-height: calc(100vh - var(--vp-nav-height));
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.9) 42%, rgba(255, 255, 255, 0.28) 100%),
+    url("/hero-der-network.png") center center / cover no-repeat;
 }
 
-.VPDoc.home .container {
+.VPContent:has(.api-hero) .VPDoc {
+  padding-top: 24px;
+  padding-bottom: 0;
+}
+
+.VPContent:has(.api-hero) .VPDoc .container {
   min-height: calc(100vh - var(--vp-nav-height) - 72px);
   display: flex;
   align-items: center;
-  max-width: 980px;
+  max-width: 1120px;
+  transform: translateX(-24px);
 }
 
-.VPDoc.home .content {
+.VPContent:has(.api-hero) .VPDoc .content {
   padding: 0;
 }
 
@@ -88,6 +97,33 @@
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 30px;
+}
+
+@media (max-width: 720px) {
+  .VPContent:has(.api-hero) {
+    min-height: calc(100vh - var(--vp-nav-height) - 65px);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.92) 42%, rgba(255, 255, 255, 0.54) 100%),
+      url("/hero-der-network.png") 60% bottom / auto 100% no-repeat;
+  }
+
+  .VPContent:has(.api-hero) .VPDoc .container {
+    min-height: calc(100vh - var(--vp-nav-height) - 154px);
+    align-items: flex-start;
+    transform: none;
+  }
+
+  .VPContent:has(.api-hero) .VPDoc {
+    padding-top: 16px;
+  }
+
+  .api-hero {
+    padding-top: 44px;
+  }
+
+  .api-hero__copy {
+    font-size: 16px;
+  }
 }
 
 .VPFooter {

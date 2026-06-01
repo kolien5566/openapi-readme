@@ -27,5 +27,9 @@ Thumbs.db
 
 # Test / coverage output
 coverage/
+playwright-output/
+
+# Legacy local test artifacts
 playwright-report/
 test-results/
+output/

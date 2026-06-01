@@ -1,10 +1,16 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const playwrightOutputDir = './playwright-output'
+
 export default defineConfig({
   testDir: './tests',
   timeout: 30_000,
   fullyParallel: true,
-  reporter: 'list',
+  outputDir: `${playwrightOutputDir}/test-results`,
+  reporter: [
+    ['list'],
+    ['html', { outputFolder: `${playwrightOutputDir}/report`, open: 'never' }],
+  ],
   use: {
     ...devices['Desktop Chrome'],
     channel: 'chrome',
