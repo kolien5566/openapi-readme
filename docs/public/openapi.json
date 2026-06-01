@@ -139,9 +139,8 @@
                 "properties": {
                   "siteId": {
                     "type": "string",
-                    "format": "uuid",
                     "description": "Site ID to authorize",
-                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                    "example": "site-001"
                   }
                 }
               }
@@ -161,8 +160,7 @@
                       "example": "onboarding success"
                     },
                     "siteId": {
-                      "type": "string",
-                      "format": "uuid"
+                      "type": "string"
                     },
                     "timestamp": {
                       "type": "string",
@@ -259,8 +257,7 @@
                       "example": "offboarding success"
                     },
                     "siteId": {
-                      "type": "string",
-                      "format": "uuid"
+                      "type": "string"
                     },
                     "timestamp": {
                       "type": "string",
@@ -418,7 +415,7 @@
                 "properties": {
                   "sites": {
                     "type": "array",
-                    "description": "List of site IDs, up to 100 sites",
+                    "description": "List of IDs, up to 100 items",
                     "minItems": 1,
                     "maxItems": 100,
                     "items": {
@@ -492,7 +489,7 @@
                 "properties": {
                   "devices": {
                     "type": "array",
-                    "description": "List of device SNs, up to 100 devices",
+                    "description": "List of IDs, up to 100 items",
                     "minItems": 1,
                     "maxItems": 100,
                     "items": {
@@ -826,7 +823,7 @@
       "post": {
         "tags": ["Device Dispatch"],
         "summary": "Send device command",
-        "description": "Send the same power control dispatch command to multiple devices. Returns a batch command ID for tracking or cancellation.",
+        "description": "Send a power control dispatch command to a device.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -844,7 +841,7 @@
         },
         "responses": {
           "202": {
-            "description": "Command instruction received",
+            "description": "Command received",
             "content": {
               "application/json": {
                 "schema": {
@@ -857,7 +854,7 @@
             "$ref": "#/components/responses/BadRequest"
           },
           "422": {
-            "description": "Instruction parameters exceed device capability range",
+            "description": "Command parameters exceed device capability range",
             "content": {
               "application/json": {
                 "schema": {
@@ -884,7 +881,7 @@
                 "properties": {
                   "devices": {
                     "type": "array",
-                    "description": "List of device SNs, up to 100 devices",
+                    "description": "List of IDs, up to 100 items",
                     "minItems": 1,
                     "maxItems": 100,
                     "items": {
@@ -901,7 +898,7 @@
         },
         "responses": {
           "202": {
-            "description": "Batch command instruction received",
+            "description": "Batch command received",
             "content": {
               "application/json": {
                 "schema": {
@@ -909,7 +906,6 @@
                   "properties": {
                     "batchCommandId": {
                       "type": "string",
-                      "format": "uuid",
                       "description": "System generated batch command ID"
                     },
                     "message": {
@@ -929,7 +925,7 @@
             "$ref": "#/components/responses/BadRequest"
           },
           "422": {
-            "description": "Instruction parameters exceed device capability range",
+            "description": "Command parameters exceed device capability range",
             "content": {
               "application/json": {
                 "schema": {
@@ -952,8 +948,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             },
             "description": "Batch command ID"
           }
@@ -971,8 +966,7 @@
                       "example": "Batch command cancelled"
                     },
                     "batchCommandId": {
-                      "type": "string",
-                      "format": "uuid"
+                      "type": "string"
                     },
                     "results": {
                       "type": "array",
@@ -985,7 +979,6 @@
                           },
                           "commandId": {
                             "type": "string",
-                            "format": "uuid",
                             "description": "Command ID"
                           },
                           "status": {
@@ -1038,8 +1031,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             },
             "description": "Command ID"
           }
@@ -1064,7 +1056,7 @@
     "/devices/{deviceId}/commands/{commandId}/cancel": {
       "put": {
         "tags": ["Device Dispatch"],
-        "summary": "Cancel command instruction",
+        "summary": "Cancel command",
         "description": "Cancel a pending or executing command.",
         "parameters": [
           {
@@ -1075,8 +1067,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             },
             "description": "Command ID"
           }
@@ -1094,8 +1085,7 @@
                       "example": "Command cancelled"
                     },
                     "commandId": {
-                      "type": "string",
-                      "format": "uuid"
+                      "type": "string"
                     },
                     "timestamp": {
                       "type": "string",
@@ -1123,7 +1113,7 @@
         }
       }
     },
-    "/devices/{deviceId}/schedules": {
+    "/devices/{deviceId}/schedule": {
       "get": {
         "tags": ["Device Dispatch"],
         "summary": "Get device schedule",
@@ -1205,10 +1195,10 @@
         }
       }
     },
-    "/devices/schedules": {
+    "/devices/schedule": {
       "post": {
         "tags": ["Batch Device Dispatch"],
-        "summary": "Batch set device schedules",
+        "summary": "Batch set device schedule",
         "description": "Set the same recurring charge and discharge schedule for multiple devices.",
         "requestBody": {
           "required": true,
@@ -1220,7 +1210,7 @@
                 "properties": {
                   "devices": {
                     "type": "array",
-                    "description": "List of device SNs, up to 100 devices",
+                    "description": "List of IDs, up to 100 items",
                     "minItems": 1,
                     "maxItems": 100,
                     "items": {
@@ -1242,7 +1232,7 @@
         },
         "responses": {
           "200": {
-            "description": "Schedules set",
+            "description": "schedule set",
             "content": {
               "application/json": {
                 "schema": {
@@ -1424,7 +1414,7 @@
                 "properties": {
                   "devices": {
                     "type": "array",
-                    "description": "List of device SNs, up to 100 devices",
+                    "description": "List of IDs, up to 100 items",
                     "minItems": 1,
                     "maxItems": 100,
                     "items": {
@@ -1440,7 +1430,7 @@
                 "setOperationMode": {
                   "summary": "Set operation mode for multiple devices",
                   "value": {
-                    "devices": ["SN001", "SN002"],
+                    "devices": ["device-001", "device-002"],
                     "configuration": {
                       "operationMode": "selfConsumption"
                     }
@@ -1449,7 +1439,7 @@
                 "setMultipleParameters": {
                   "summary": "Set multiple parameters for multiple devices",
                   "value": {
-                    "devices": ["SN001", "SN002"],
+                    "devices": ["device-001", "device-002"],
                     "configuration": {
                       "operationMode": "selfConsumption",
                       "siteExportLimitW": 2000
@@ -1541,8 +1531,7 @@
         "in": "path",
         "required": true,
         "schema": {
-          "type": "string",
-          "format": "uuid"
+          "type": "string"
         },
         "description": "Site ID"
       },
@@ -1551,8 +1540,7 @@
         "in": "path",
         "required": true,
         "schema": {
-          "type": "string",
-          "format": "uuid"
+          "type": "string"
         },
         "description": "Device ID"
       },
@@ -1673,7 +1661,6 @@
         "properties": {
           "id": {
             "type": "string",
-            "format": "uuid",
             "description": "Site unique identifier"
           },
           "name": {
@@ -1834,12 +1821,10 @@
         "properties": {
           "id": {
             "type": "string",
-            "format": "uuid",
             "description": "Device unique identifier"
           },
           "siteId": {
             "type": "string",
-            "format": "uuid",
             "description": "Parent site ID"
           },
           "name": {
@@ -1910,8 +1895,7 @@
         "description": "Site latest telemetry data",
         "properties": {
           "siteId": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "devices": {
             "type": "array",
@@ -1927,8 +1911,7 @@
         "description": "Site historical telemetry data (multiple records)",
         "properties": {
           "siteId": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "startTime": {
             "type": "string",
@@ -1954,8 +1937,7 @@
         "description": "Device latest telemetry data",
         "properties": {
           "deviceId": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "timestamp": {
             "type": "string",
@@ -2174,8 +2156,7 @@
         "description": "Device historical telemetry data (multiple records)",
         "properties": {
           "deviceId": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "startTime": {
             "type": "string",
@@ -2198,8 +2179,7 @@
         "description": "Site energy statistics aggregated by day, month, or year",
         "properties": {
           "siteId": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "period": {
             "type": "string",
@@ -2265,7 +2245,6 @@
                     "properties": {
                       "deviceId": {
                         "type": "string",
-                        "format": "uuid",
                         "description": "Device ID"
                       },
                       "batteryChargeKwh": {
@@ -2306,8 +2285,7 @@
         "description": "Device energy statistics aggregated by day, month, or year",
         "properties": {
           "deviceId": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "period": {
             "type": "string",
@@ -2404,7 +2382,6 @@
         "properties": {
           "deviceId": {
             "type": "string",
-            "format": "uuid",
             "description": "Device ID"
           },
           "total": {
@@ -2491,7 +2468,6 @@
         "properties": {
           "id": {
             "type": "string",
-            "format": "uuid",
             "description": "System generated command ID"
           },
           "message": {
@@ -2506,16 +2482,14 @@
       },
       "CommandStatus": {
         "type": "object",
-        "description": "Command instruction detailed status",
+        "description": "Command status details",
         "properties": {
           "id": {
             "type": "string",
-            "format": "uuid",
-            "description": "Command instruction ID"
+            "description": "Command ID"
           },
           "deviceId": {
             "type": "string",
-            "format": "uuid",
             "description": "Device ID"
           },
           "activePowerControl": {
@@ -2572,12 +2546,12 @@
           "receivedAt": {
             "type": "string",
             "format": "date-time",
-            "description": "Time when instruction was received"
+            "description": "Time when command was received"
           },
           "cancelledAt": {
             "type": "string",
             "format": "date-time",
-            "description": "Time when instruction was cancelled"
+            "description": "Time when command was cancelled"
           },
           "cancellReason": {
             "type": "string",
@@ -2607,8 +2581,7 @@
         "description": "Command history list response",
         "properties": {
           "deviceId": {
-            "type": "string",
-            "format": "uuid"
+            "type": "string"
           },
           "total": {
             "type": "integer",
