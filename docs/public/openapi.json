@@ -1123,7 +1123,7 @@
         }
       }
     },
-    "/devices/{deviceId}/schedule": {
+    "/devices/{deviceId}/schedules": {
       "get": {
         "tags": ["Device Dispatch"],
         "summary": "Get device schedule",
@@ -1170,7 +1170,7 @@
         },
         "responses": {
           "200": {
-            "description": "Schedule updated",
+            "description": "Schedule set",
             "content": {
               "application/json": {
                 "schema": {
@@ -1178,7 +1178,7 @@
                   "properties": {
                     "message": {
                       "type": "string",
-                      "example": "schedule updated"
+                      "example": "schedule set"
                     },
                     "timestamp": {
                       "type": "string",
@@ -1205,7 +1205,7 @@
         }
       }
     },
-    "/devices/schedule": {
+    "/devices/schedules": {
       "post": {
         "tags": ["Batch Device Dispatch"],
         "summary": "Batch set device schedules",
@@ -1242,7 +1242,7 @@
         },
         "responses": {
           "200": {
-            "description": "Schedules updated",
+            "description": "Schedules set",
             "content": {
               "application/json": {
                 "schema": {
@@ -1320,8 +1320,8 @@
       },
       "put": {
         "tags": ["Device Dispatch"],
-        "summary": "Update device configuration",
-        "description": "Update device persistent configuration parameters. All fields are optional, only send parameters that need to be updated, unchanged parameters remain as is. Multiple parameters can be updated at once.",
+        "summary": "Set device configuration",
+        "description": "Set device persistent configuration parameters. All fields are optional, only send parameters that need to be set, unchanged parameters remain as is. Multiple parameters can be set at once.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -1354,7 +1354,7 @@
         },
         "responses": {
           "200": {
-            "description": "Configuration updated successfully",
+            "description": "Configuration set successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -1362,14 +1362,14 @@
                   "properties": {
                     "message": {
                       "type": "string",
-                      "example": "configuration updated"
+                      "example": "configuration set"
                     },
-                    "updated": {
+                    "set": {
                       "type": "array",
                       "items": {
                         "type": "object"
                       },
-                      "description": "List of fields updated this time",
+                      "description": "List of fields set this time",
                       "example": {
                         "operationMode": "selfConsumption"
                       }
@@ -1412,8 +1412,8 @@
     "/devices/configuration": {
       "post": {
         "tags": ["Batch Device Dispatch"],
-        "summary": "Batch set device configurations",
-        "description": "Update persistent configuration parameters for multiple devices. All configuration fields are optional; only send parameters that need to be updated.",
+        "summary": "Batch set device configuration",
+        "description": "Set persistent configuration parameters for multiple devices. All configuration fields are optional; only send parameters that need to be set.",
         "requestBody": {
           "required": true,
           "content": {
@@ -1462,7 +1462,7 @@
         },
         "responses": {
           "200": {
-            "description": "Configurations updated successfully",
+            "description": "Configuration set successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -1481,12 +1481,12 @@
                             "type": "string",
                             "enum": ["success", "failed"]
                           },
-                          "updated": {
+                          "set": {
                             "type": "array",
                             "items": {
                               "type": "string"
                             },
-                            "description": "List of fields updated for this device"
+                            "description": "List of fields set for this device"
                           },
                           "message": {
                             "type": "string"
@@ -2705,7 +2705,7 @@
       },
       "DeviceConfiguration": {
         "type": "object",
-        "description": "Device persistent configuration (long-term effective settings). GET interface returns complete configuration, PUT interface for update all fields are optional, only send parameters that need to be updated.",
+        "description": "Device persistent configuration (long-term effective settings). GET interface returns complete configuration. PUT interface sets configuration parameters; all fields are optional, only send parameters that need to be set.",
         "properties": {
           "operationMode": {
             "type": "string",

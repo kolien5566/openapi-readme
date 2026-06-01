@@ -5,10 +5,10 @@ export default {
   paths() {
     return usePaths({ spec })
       .getPathsByVerbs()
-      .map(({ operationId, summary }) => ({
+      .map(({ operationId: endpoint, summary }) => ({
         params: {
-          operationId,
-          pageTitle: summary || operationId,
+          endpoint,
+          pageTitle: summary || endpoint,
         },
       }))
   },

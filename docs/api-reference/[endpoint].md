@@ -7,7 +7,7 @@ outline: false
 import { useRoute } from 'vitepress'
 
 const route = useRoute()
-const operationId = route.data.params.operationId
+const endpoint = route.data.params.endpoint
 </script>
 
-<OAOperation :operationId="operationId" />
+<OAOperation :operationId="endpoint" />
