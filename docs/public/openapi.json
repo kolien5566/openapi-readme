@@ -59,7 +59,7 @@
       "get": {
         "tags": ["Site Management"],
         "summary": "Get site list",
-        "description": "Get list of all authorized sites, supports pagination",
+        "description": "List authorized sites.",
         "parameters": [
           {
             "name": "page",
@@ -128,7 +128,7 @@
       "post": {
         "tags": ["Site Management"],
         "summary": "Bind site authorization",
-        "description": "Authorize specified site for current client access.",
+        "description": "Authorize access to a site for the current client.",
         "requestBody": {
           "required": true,
           "content": {
@@ -206,7 +206,7 @@
       "get": {
         "tags": ["Site Management"],
         "summary": "Get site details",
-        "description": "Get detailed information of specified site, including all devices under the site",
+        "description": "Return site details and optionally its devices.",
         "parameters": [
           {
             "$ref": "#/components/parameters/SiteId"
@@ -240,7 +240,7 @@
       "delete": {
         "tags": ["Site Management"],
         "summary": "Unbind site authorization",
-        "description": "Remove current client's access authorization to specified site",
+        "description": "Remove current client access to a site.",
         "parameters": [
           {
             "$ref": "#/components/parameters/SiteId"
@@ -291,7 +291,7 @@
       "get": {
         "tags": ["Device Management"],
         "summary": "Get all devices list",
-        "description": "Get flattened list of all devices across all sites under current account, supports pagination and filtering. Convenient for VPP batch dispatch.",
+        "description": "List devices across authorized sites.",
         "parameters": [
           {
             "name": "page",
@@ -353,7 +353,7 @@
       "get": {
         "tags": ["Device Management"],
         "summary": "Get device details",
-        "description": "Get detailed information of specified device (static parameters)",
+        "description": "Return static device details.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -380,7 +380,7 @@
       "get": {
         "tags": ["Telemetry Data"],
         "summary": "Get site latest telemetry data",
-        "description": "Get site-level latest telemetry data, including meter readings and aggregated data",
+        "description": "Return the latest site telemetry",
         "parameters": [
           {
             "$ref": "#/components/parameters/SiteId"
@@ -407,7 +407,7 @@
       "post": {
         "tags": ["Batch Telemetry Data"],
         "summary": "Batch get site latest telemetry data",
-        "description": "Get the latest telemetry data for multiple sites.",
+        "description": "Return the latest telemetry for the requested sites.",
         "requestBody": {
           "required": true,
           "content": {
@@ -454,7 +454,7 @@
       "get": {
         "tags": ["Telemetry Data"],
         "summary": "Get device latest telemetry data",
-        "description": "Get device's latest telemetry data",
+        "description": "Return the latest device telemetry.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -481,7 +481,7 @@
       "post": {
         "tags": ["Batch Telemetry Data"],
         "summary": "Batch get device latest telemetry data",
-        "description": "Get the latest telemetry data for multiple devices.",
+        "description": "Return the latest telemetry for the requested devices.",
         "requestBody": {
           "required": true,
           "content": {
@@ -528,7 +528,7 @@
       "get": {
         "tags": ["Telemetry Data"],
         "summary": "Get device historical telemetry data",
-        "description": "Get device historical telemetry data (maximum 30 days query)",
+        "description": "Return device telemetry history within a 30-day time range.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -599,7 +599,7 @@
       "get": {
         "tags": ["Energy Statistics"],
         "summary": "Get site energy statistics",
-        "description": "Get site energy data aggregated by period, for long-term trend analysis and reconciliation. Supports aggregation by day, month, year",
+        "description": "Return site energy statistics aggregated by day, month, or year.",
         "parameters": [
           {
             "$ref": "#/components/parameters/SiteId"
@@ -651,7 +651,7 @@
       "get": {
         "tags": ["Energy Statistics"],
         "summary": "Get device energy statistics",
-        "description": "Get device energy data aggregated by period. Supports aggregation by day, month, year",
+        "description": "Return device energy statistics aggregated by day, month, or year.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -694,7 +694,7 @@
       "get": {
         "tags": ["Fault & Alarm"],
         "summary": "Get device fault and alarm list",
-        "description": "Get fault and alarm information of specified device, maximum 30 days, supports pagination",
+        "description": "Return device fault and alarm records within a 30-day time range.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -751,7 +751,7 @@
       "get": {
         "tags": ["Device Dispatch"],
         "summary": "Get device command history list",
-        "description": "Get device command instruction history, kept for maximum 30 days",
+        "description": "Return device command history within a 30-day time range.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -826,7 +826,7 @@
       "post": {
         "tags": ["Device Dispatch"],
         "summary": "Send device command",
-        "description": "Send power dispatch command to single device",
+        "description": "Send the same power control dispatch command to multiple devices. Returns a batch command ID for tracking or cancellation.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -873,7 +873,7 @@
       "post": {
         "tags": ["Batch Device Dispatch"],
         "summary": "Batch send device commands",
-        "description": "Send the same power dispatch command to multiple devices and return a batch command ID for tracking or cancellation.",
+        "description": "Send the same power control dispatch command to multiple devices. Returns a batch command ID for tracking or cancellation.",
         "requestBody": {
           "required": true,
           "content": {
@@ -945,7 +945,7 @@
       "put": {
         "tags": ["Batch Device Dispatch"],
         "summary": "Cancel batch command",
-        "description": "Cancel executing or pending commands created by a batch command instruction.",
+        "description": "Cancel pending or executing commands created by a batch command.",
         "parameters": [
           {
             "name": "batchCommandId",
@@ -1028,7 +1028,7 @@
       "get": {
         "tags": ["Device Dispatch"],
         "summary": "Query command execution status",
-        "description": "Query execution status of specified command instruction",
+        "description": "Return the execution status of a command.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -1065,7 +1065,7 @@
       "put": {
         "tags": ["Device Dispatch"],
         "summary": "Cancel command instruction",
-        "description": "Cancel executing or pending command instruction",
+        "description": "Cancel a pending or executing command.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -1127,7 +1127,7 @@
       "get": {
         "tags": ["Device Dispatch"],
         "summary": "Get device schedule",
-        "description": "Get the device's current recurring charge and discharge schedule.",
+        "description": "Return the device's recurring charge and discharge schedule.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -1152,7 +1152,7 @@
       "put": {
         "tags": ["Device Dispatch"],
         "summary": "Set device schedule",
-        "description": "Configure the device's recurring charge and discharge schedule.",
+        "description": "Set the device's recurring charge and discharge schedule.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -1209,7 +1209,7 @@
       "post": {
         "tags": ["Batch Device Dispatch"],
         "summary": "Batch set device schedules",
-        "description": "Configure the same recurring charge and discharge schedule for multiple devices.",
+        "description": "Set the same recurring charge and discharge schedule for multiple devices.",
         "requestBody": {
           "required": true,
           "content": {
@@ -1296,7 +1296,7 @@
       "get": {
         "tags": ["Device Dispatch"],
         "summary": "Get device configuration",
-        "description": "Get device persistent configuration parameters (long-term effective settings such as operation mode)",
+        "description": "Return persistent device configuration.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -1321,7 +1321,7 @@
       "put": {
         "tags": ["Device Dispatch"],
         "summary": "Set device configuration",
-        "description": "Set device persistent configuration parameters. All fields are optional, only send parameters that need to be set, unchanged parameters remain as is. Multiple parameters can be set at once.",
+        "description": "Set persistent device configuration. Omitted fields remain unchanged.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -1413,7 +1413,7 @@
       "post": {
         "tags": ["Batch Device Dispatch"],
         "summary": "Batch set device configuration",
-        "description": "Set persistent configuration parameters for multiple devices. All configuration fields are optional; only send parameters that need to be set.",
+        "description": "Set persistent configuration for multiple devices. Omitted fields remain unchanged.",
         "requestBody": {
           "required": true,
           "content": {
@@ -2195,7 +2195,7 @@
       },
       "EnergyStatistics": {
         "type": "object",
-        "description": "Site energy statistics (supports day/month/year aggregation)",
+        "description": "Site energy statistics aggregated by day, month, or year",
         "properties": {
           "siteId": {
             "type": "string",
@@ -2303,7 +2303,7 @@
       },
       "DeviceEnergyStatistics": {
         "type": "object",
-        "description": "Device energy statistics (supports day/month/year aggregation)",
+        "description": "Device energy statistics aggregated by day, month, or year",
         "properties": {
           "deviceId": {
             "type": "string",
