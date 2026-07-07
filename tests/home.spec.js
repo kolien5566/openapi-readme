@@ -33,7 +33,13 @@ test('api reference page renders an operation with playground content', async ({
 
   await expect(page.getByRole('heading', { name: 'Get site list' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Copy endpoint' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Try it out' })).toBeVisible()
+  const tryItOut = page.getByRole('button', { name: 'Try it out' })
+  await expect(tryItOut).toBeVisible()
+  await expect(tryItOut).toHaveCSS('background-color', 'rgb(0, 179, 186)')
+  const firstCheckbox = page.getByRole('checkbox').first()
+  await firstCheckbox.click()
+  await expect(firstCheckbox).toHaveCSS('background-color', 'rgb(0, 179, 186)')
+  await expect(firstCheckbox).toHaveCSS('color', 'rgb(255, 255, 255)')
 
   const sidebar = page.getByRole('navigation', { name: 'Sidebar Navigation' })
 

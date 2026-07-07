@@ -34,10 +34,6 @@
       "description": "Latest and historical telemetry data query"
     },
     {
-      "name": "Batch Telemetry Data",
-      "description": "Batch latest telemetry data query"
-    },
-    {
       "name": "Energy Statistics",
       "description": "Energy statistics data aggregated by period (day/month/year)"
     },
@@ -46,12 +42,16 @@
       "description": "Fault and alarm information query"
     },
     {
-      "name": "Device Dispatch",
-      "description": "Command and device configuration"
+      "name": "Device Command",
+      "description": "Device command dispatch and status management"
     },
     {
-      "name": "Batch Device Dispatch",
-      "description": "Batch command and device configuration"
+      "name": "Device Schedule",
+      "description": "Device recurring charge and discharge schedule management"
+    },
+    {
+      "name": "Device Configuration",
+      "description": "Device persistent configuration management"
     }
   ],
   "paths": {
@@ -402,7 +402,7 @@
     },
     "/sites/latestData/query": {
       "post": {
-        "tags": ["Batch Telemetry Data"],
+        "tags": ["Telemetry Data"],
         "summary": "Batch get site latest telemetry data",
         "description": "Return the latest telemetry for the requested sites.",
         "requestBody": {
@@ -476,7 +476,7 @@
     },
     "/devices/latestData/query": {
       "post": {
-        "tags": ["Batch Telemetry Data"],
+        "tags": ["Telemetry Data"],
         "summary": "Batch get device latest telemetry data",
         "description": "Return the latest telemetry for the requested devices.",
         "requestBody": {
@@ -746,7 +746,7 @@
     },
     "/device/{deviceId}/commands": {
       "get": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Device Command"],
         "summary": "Get device command history list",
         "description": "Return device command history within a 30-day time range.",
         "parameters": [
@@ -821,7 +821,7 @@
         }
       },
       "post": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Device Command"],
         "summary": "Send device command",
         "description": "Send a power control dispatch command to a device.",
         "parameters": [
@@ -866,80 +866,9 @@
         }
       }
     },
-    "/devices/commands": {
-      "post": {
-        "tags": ["Batch Device Dispatch"],
-        "summary": "Batch send device commands",
-        "description": "Send the same power control dispatch command to multiple devices. Returns a batch command ID for tracking or cancellation.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["devices", "command"],
-                "properties": {
-                  "devices": {
-                    "type": "array",
-                    "description": "List of IDs, up to 100 items",
-                    "minItems": 1,
-                    "maxItems": 100,
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "command": {
-                    "$ref": "#/components/schemas/CommandRequest"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Batch command received",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "batchCommandId": {
-                      "type": "string",
-                      "description": "System generated batch command ID"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Batch command received"
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "422": {
-            "description": "Command parameters exceed device capability range",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/devices/commands/{batchCommandId}/cancel": {
       "put": {
-        "tags": ["Batch Device Dispatch"],
+        "tags": ["Device Command"],
         "summary": "Cancel batch command",
         "description": "Cancel pending or executing commands created by a batch command.",
         "parameters": [
@@ -1019,7 +948,7 @@
     },
     "/devices/{deviceId}/commands/{commandId}": {
       "get": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Device Command"],
         "summary": "Query command execution status",
         "description": "Return the execution status of a command.",
         "parameters": [
@@ -1055,7 +984,7 @@
     },
     "/devices/{deviceId}/commands/{commandId}/cancel": {
       "put": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Device Command"],
         "summary": "Cancel command",
         "description": "Cancel a pending or executing command.",
         "parameters": [
@@ -1113,9 +1042,80 @@
         }
       }
     },
+    "/devices/commands": {
+      "post": {
+        "tags": ["Device Command"],
+        "summary": "Batch send device commands",
+        "description": "Send the same power control dispatch command to multiple devices. Returns a batch command ID for tracking or cancellation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["devices", "command"],
+                "properties": {
+                  "devices": {
+                    "type": "array",
+                    "description": "List of IDs, up to 100 items",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "command": {
+                    "$ref": "#/components/schemas/CommandRequest"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Batch command received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batchCommandId": {
+                      "type": "string",
+                      "description": "System generated batch command ID"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Batch command received"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "422": {
+            "description": "Command parameters exceed device capability range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/devices/{deviceId}/schedule": {
       "get": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Device Schedule"],
         "summary": "Get device schedule",
         "description": "Return the device's recurring charge and discharge schedule.",
         "parameters": [
@@ -1140,7 +1140,7 @@
         }
       },
       "put": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Device Schedule"],
         "summary": "Set device schedule",
         "description": "Set the device's recurring charge and discharge schedule.",
         "parameters": [
@@ -1197,7 +1197,7 @@
     },
     "/devices/schedule": {
       "post": {
-        "tags": ["Batch Device Dispatch"],
+        "tags": ["Device Schedule"],
         "summary": "Batch set device schedule",
         "description": "Set the same recurring charge and discharge schedule for multiple devices.",
         "requestBody": {
@@ -1284,7 +1284,7 @@
     },
     "/devices/{deviceId}/configuration": {
       "get": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Device Configuration"],
         "summary": "Get device configuration",
         "description": "Return persistent device configuration.",
         "parameters": [
@@ -1309,7 +1309,7 @@
         }
       },
       "put": {
-        "tags": ["Device Dispatch"],
+        "tags": ["Device Configuration"],
         "summary": "Set device configuration",
         "description": "Set persistent device configuration. Omitted fields remain unchanged.",
         "parameters": [
@@ -1401,7 +1401,7 @@
     },
     "/devices/configuration": {
       "post": {
-        "tags": ["Batch Device Dispatch"],
+        "tags": ["Device Configuration"],
         "summary": "Batch set device configuration",
         "description": "Set persistent configuration for multiple devices. Omitted fields remain unchanged.",
         "requestBody": {

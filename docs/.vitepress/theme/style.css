@@ -7,6 +7,9 @@
   --vp-c-border: #e8edf2;
   --vp-button-brand-bg: #00b3ba;
   --vp-button-brand-hover-bg: #009aa1;
+  --primary: 182.3 100% 36.5%;
+  --primary-foreground: 0 0% 100%;
+  --ring: 182 100% 36%;
 }
 
 .VPSwitchAppearance,
@@ -179,6 +182,47 @@
 .api-method-delete {
   background: rgba(239, 68, 68, 0.14);
   color: #b91c1c;
+}
+
+.OAPlaygroundParameters [role="checkbox"] {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #c7d3df;
+  border-radius: 5px;
+  background: #fff;
+  color: transparent;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    color 0.15s ease;
+}
+
+.OAPlaygroundParameters [role="checkbox"]:hover {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+}
+
+.OAPlaygroundParameters [role="checkbox"][data-state="checked"],
+.OAPlaygroundParameters [role="checkbox"][data-state="indeterminate"] {
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-1);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 125, 133, 0.24);
+}
+
+.OAPlaygroundParameters [role="checkbox"]:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(0, 179, 186, 0.18),
+    0 1px 2px rgba(0, 125, 133, 0.24);
+}
+
+.OAPlaygroundParameters [role="checkbox"] svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 3;
 }
 
 .OAOperation .branding,
