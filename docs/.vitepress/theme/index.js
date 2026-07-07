@@ -5,21 +5,77 @@ import './style.css'
 
 import spec from '../../public/openapi.json'
 
-const productionApiBaseUrl = 'https://openapi-au.pylontechcloud.com/api/openapi/v1'
-const localHosts = new Set(['localhost', '127.0.0.1', '::1'])
-const isLocalDocs = typeof window !== 'undefined' && localHosts.has(window.location.hostname)
-const localApiBaseUrl = typeof window !== 'undefined'
-  ? `${window.location.origin}/api/openapi/v1`
+const productionApiBaseUrl = 'https://openapi.pylontechcloud.com/api/openapi/v1'
+const apiProxyPath = '/api/openapi/v1'
+const apiBaseUrl = typeof window !== 'undefined'
+  ? `${window.location.origin}${apiProxyPath}`
   : productionApiBaseUrl
-const apiBaseUrl = isLocalDocs ? localApiBaseUrl : productionApiBaseUrl
 const clientSpec = {
   ...spec,
   servers: [
     {
       url: apiBaseUrl,
-      description: isLocalDocs ? 'Local Development Proxy' : 'Production Environment',
+      description: 'Production Environment via Same-Origin Proxy',
     },
   ],
+}
+
+function isOpenapiProxyRequest(input) {
+  const requestUrl = typeof input === 'string' || input instanceof URL
+    ? String(input)
+    : input?.url
+
+  if (!requestUrl) {
+    return false
+  }
+
+  try {
+    const url = new URL(requestUrl, window.location.origin)
+    return url.origin === window.location.origin && url.pathname.startsWith(apiProxyPath)
+  }
+  catch {
+    return false
+  }
+}
+
+function normalizeBearerAuthorization(headers) {
+  const authorization = headers.get('Authorization')
+
+  if (!authorization) {
+    return
+  }
+
+  const value = authorization.trim()
+  if (!value || /^Bearer\s+/i.test(value)) {
+    return
+  }
+
+  headers.set('Authorization', `Bearer ${value}`)
+}
+
+function installOpenapiBearerPatch() {
+  if (typeof window === 'undefined' || window.__pylontechOpenapiBearerPatchInstalled) {
+    return
+  }
+
+  window.__pylontechOpenapiBearerPatchInstalled = true
+  const nativeFetch = window.fetch.bind(window)
+
+  window.fetch = (input, init = {}) => {
+    if (!isOpenapiProxyRequest(input)) {
+      return nativeFetch(input, init)
+    }
+
+    const request = input instanceof Request ? input : null
+    const headers = new Headers(init.headers ?? request?.headers)
+    normalizeBearerAuthorization(headers)
+
+    if (request) {
+      return nativeFetch(new Request(request, { ...init, headers }))
+    }
+
+    return nativeFetch(input, { ...init, headers })
+  }
 }
 
 export default {
@@ -29,6 +85,7 @@ export default {
       document.documentElement.classList.remove('dark')
       document.documentElement.style.colorScheme = 'light'
       localStorage.setItem('vitepress-theme-appearance', 'light')
+      installOpenapiBearerPatch()
     }
 
     useOpenapi({
@@ -48,7 +105,7 @@ export default {
           hiddenSlots: ['branding', 'code-samples'],
         },
         storage: {
-          prefix: '--pylontech-openapi-au-v2',
+          prefix: '--pylontech-openapi-proxy-v2',
         },
         playground: {
           jsonEditor: {

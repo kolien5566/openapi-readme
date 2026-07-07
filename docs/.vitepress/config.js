@@ -4,7 +4,7 @@ import spec from '../public/openapi.json' with { type: 'json' }
 
 const openapiSidebar = useSidebar({ spec })
 const apiProxyPrefix = '/api/openapi/v1'
-const apiProxyTarget = 'https://openapi-au.pylontechcloud.com'
+const apiProxyTarget = 'https://openapi.pylontechcloud.com'
 
 function escapeHtml(value) {
   return String(value)
@@ -29,6 +29,15 @@ export default defineConfig({
   appearance: false,
   vite: {
     server: {
+      proxy: {
+        [apiProxyPrefix]: {
+          target: apiProxyTarget,
+          changeOrigin: true,
+          secure: true,
+        },
+      },
+    },
+    preview: {
       proxy: {
         [apiProxyPrefix]: {
           target: apiProxyTarget,

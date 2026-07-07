@@ -10,4 +10,6 @@ const route = useRoute()
 const endpoint = route.data.params.endpoint
 </script>
 
-<OAOperation :operationId="endpoint" />
+<ClientOnly>
+  <OAOperation :operationId="endpoint" />
+</ClientOnly>
