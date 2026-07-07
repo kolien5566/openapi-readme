@@ -45,15 +45,16 @@ export default defineConfig({
     logo: '/logo.svg',
     siteTitle: false,
     nav: [
-      { text: 'Guide', link: '/guide/getting-started' },
+      { text: 'Guide', link: '/guide/api-usage-sop' },
       { text: 'API Reference', link: '/api-reference/get-sites' },
       { text: 'OpenAPI JSON', link: '/openapi.json' },
     ],
     search: false,
     sidebar: {
       '/guide/': [
-        { text: 'Getting Started', link: '/guide/getting-started' },
-        { text: 'Authentication', link: '/guide/authentication' },
+        // { text: 'Getting Started', link: '/guide/getting-started' },
+        // { text: 'Authentication', link: '/guide/authentication' },
+        { text: 'API Usage SOP', link: '/guide/api-usage-sop' },
       ],
       '/api-reference/': [
         ...openapiSidebar.generateSidebarGroups({

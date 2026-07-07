@@ -13,7 +13,7 @@ pageClass: home
       Pylontech energy storage systems.
     </p>
     <div class="api-hero__actions">
-      <a class="VPButton medium brand" href="/guide/getting-started">Start Integration</a>
+      <a class="VPButton medium brand" href="/guide/api-usage-sop">Start Integration</a>
       <a class="VPButton medium alt" href="/api-reference/get-sites">API Reference</a>
     </div>
   </div>
