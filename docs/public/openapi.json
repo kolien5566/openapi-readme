@@ -124,80 +124,6 @@
             "$ref": "#/components/responses/Unauthorized"
           }
         }
-      },
-      "post": {
-        "tags": ["Site Management"],
-        "summary": "Bind site authorization",
-        "description": "Authorize access to a site for the current client.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["siteId"],
-                "properties": {
-                  "siteId": {
-                    "type": "string",
-                    "description": "Site ID to authorize",
-                    "example": "site-001"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "onboarding success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "onboarding success"
-                    },
-                    "siteId": {
-                      "type": "string"
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "description": "Site not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Site already authorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
       }
     },
     "/sites/{siteId}": {
@@ -232,54 +158,6 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
-          }
-        }
-      },
-      "delete": {
-        "tags": ["Site Management"],
-        "summary": "Unbind site authorization",
-        "description": "Remove current client access to a site.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/SiteId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "offboarding success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "offboarding success"
-                    },
-                    "siteId": {
-                      "type": "string"
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "description": "Site not found or not authorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
           }
         }
       }
@@ -362,87 +240,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Device"
+                  "$ref": "#/components/schemas/DeviceDetail"
                 }
               }
             }
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
-          }
-        }
-      }
-    },
-    "/sites/{siteId}/latestData": {
-      "get": {
-        "tags": ["Telemetry Data"],
-        "summary": "Get site latest telemetry data",
-        "description": "Return the latest site telemetry",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/SiteId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Site latest telemetry data returned successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SiteTelemetry"
-                }
-              }
-            }
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          }
-        }
-      }
-    },
-    "/sites/latestData/query": {
-      "post": {
-        "tags": ["Telemetry Data"],
-        "summary": "Batch get site latest telemetry data",
-        "description": "Return the latest telemetry for the requested sites.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["sites"],
-                "properties": {
-                  "sites": {
-                    "type": "array",
-                    "description": "List of IDs, up to 100 items",
-                    "minItems": 1,
-                    "maxItems": 100,
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Site latest telemetry data returned successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SiteTelemetry"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
           }
         }
       }
@@ -592,63 +396,11 @@
         }
       }
     },
-    "/sites/{siteId}/energy": {
-      "get": {
-        "tags": ["Energy Statistics"],
-        "summary": "Get site energy statistics",
-        "description": "Return site energy statistics aggregated by day, month, or year.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/SiteId"
-          },
-          {
-            "name": "period",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "enum": ["day", "month", "year"]
-            },
-            "description": "Statistics period: By day, By month, By year"
-          },
-          {
-            "$ref": "#/components/parameters/StartDate"
-          },
-          {
-            "$ref": "#/components/parameters/EndDate"
-          },
-          {
-            "name": "includeDevices",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            },
-            "description": "Whether to include energy details for each device (default false to optimize performance)"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Energy statistics data returned successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EnergyStatistics"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          }
-        }
-      }
-    },
     "/devices/{deviceId}/energy": {
       "get": {
         "tags": ["Energy Statistics"],
         "summary": "Get device energy statistics",
-        "description": "Return device energy statistics aggregated by day, month, or year.",
+        "description": "Return device energy statistics aggregated by 15 minutes, 30 minutes, 1 hour, day, month, or year. For 15min, 30min, and 1h periods, the query range must be exactly one calendar day, from 00:00 to 00:00 on the following day.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -659,9 +411,9 @@
             "required": true,
             "schema": {
               "type": "string",
-              "enum": ["day", "month", "year"]
+              "enum": ["15min", "30min", "1h", "day", "month", "year"]
             },
-            "description": "Statistics period: By day, By month, By year"
+            "description": "Statistics period: Every 15 minutes, Every 30 minutes, Hourly, Daily, Monthly, or Yearly. The 15min, 30min, and 1h periods support a one-day query range only."
           },
           {
             "$ref": "#/components/parameters/StartDate"
@@ -1890,6 +1642,24 @@
           }
         }
       },
+      "DeviceDetail": {
+        "type": "object",
+        "description": "Device details",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Device"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "gridConnected": {
+                "type": "boolean",
+                "description": "Grid connection status: true for on-grid, false for off-grid"
+              }
+            }
+          }
+        ]
+      },
       "SiteTelemetry": {
         "type": "object",
         "description": "Site latest telemetry data",
@@ -2282,15 +2052,15 @@
       },
       "DeviceEnergyStatistics": {
         "type": "object",
-        "description": "Device energy statistics aggregated by day, month, or year",
+        "description": "Device energy statistics aggregated by 15 minutes, 30 minutes, 1 hour, day, month, or year",
         "properties": {
           "deviceId": {
             "type": "string"
           },
           "period": {
             "type": "string",
-            "enum": ["day", "month", "year"],
-            "description": "Statistics period"
+            "enum": ["15min", "30min", "1h", "day", "month", "year"],
+            "description": "Aggregation interval"
           },
           "startDate": {
             "type": "string",
@@ -2304,14 +2074,14 @@
           },
           "data": {
             "type": "array",
-            "description": "Data points aggregated by period",
+            "description": "Data points aggregated by the requested interval",
             "items": {
               "type": "object",
               "properties": {
                 "date": {
                   "type": "string",
-                  "description": "Date identifier. Format varies by period: day='2025-10-11', month='2025-10', year='2025'",
-                  "example": "2025-10-11"
+                  "description": "Period identifier. For 15min, 30min, and 1h periods, this is the interval start time in ISO 8601 format; for day, month, and year periods, examples are '2025-10-11', '2025-10', and '2025'.",
+                  "example": "2025-10-11T00:00:00Z"
                 },
                 "batteryChargeKwh": {
                   "type": "number",
@@ -2337,6 +2107,16 @@
                   "type": "number",
                   "format": "double",
                   "description": "PCS consumption (kWh)"
+                },
+                "gridImportKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Grid import energy (kWh)"
+                },
+                "gridExportKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Grid export energy (kWh)"
                 }
               }
             }
