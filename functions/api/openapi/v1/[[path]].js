@@ -1,4 +1,4 @@
-const OPENAPI_ORIGIN = 'https://openapi.pylontechcloud.com'
+const OPENAPI_ORIGIN = 'https://openapi-au.pylontechcloud.com'
 const OPENAPI_BASE_PATH = '/api/openapi/v1'
 
 export async function onRequest({ request, params }) {

@@ -11,8 +11,8 @@
   },
   "servers": [
     {
-      "url": "https://openapi.pylontechcloud.com/api/openapi/v1",
-      "description": "Production Environment"
+      "url": "https://openapi-au.pylontechcloud.com/api/openapi/v1",
+      "description": "Australia Production Environment"
     }
   ],
   "security": [

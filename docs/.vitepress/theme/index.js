@@ -5,7 +5,7 @@ import './style.css'
 
 import spec from '../../public/openapi.json'
 
-const productionApiBaseUrl = 'https://openapi.pylontechcloud.com/api/openapi/v1'
+const productionApiBaseUrl = 'https://openapi-au.pylontechcloud.com/api/openapi/v1'
 const apiProxyPath = '/api/openapi/v1'
 const apiBaseUrl = typeof window !== 'undefined'
   ? `${window.location.origin}${apiProxyPath}`
@@ -105,7 +105,7 @@ export default {
           hiddenSlots: ['branding', 'code-samples'],
         },
         storage: {
-          prefix: '--pylontech-openapi-proxy-v2',
+          prefix: '--pylontech-openapi-au-proxy-v2',
         },
         playground: {
           jsonEditor: {
