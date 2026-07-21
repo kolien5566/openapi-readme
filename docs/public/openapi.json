@@ -2197,14 +2197,14 @@
           },
           "chargeCutoffSocPercent": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 5,
             "maximum": 100,
             "description": "Charge cutoff state of charge (%).",
             "example": 0
           },
           "dischargeCutoffSocPercent": {
             "type": "integer",
-            "minimum": 0,
+            "minimum": 5,
             "maximum": 100,
             "description": "Discharge cutoff state of charge (%).",
             "example": 0
@@ -2463,7 +2463,7 @@
           "chargeCutoffSocPercent": {
             "type": "integer",
             "description": "Charge Maximum SOC Limit (%), will not charge exceed this value",
-            "minimum": 50,
+            "minimum": 5,
             "maximum": 100,
             "example": 95
           },
