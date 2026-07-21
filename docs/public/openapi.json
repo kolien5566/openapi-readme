@@ -1948,112 +1948,6 @@
           }
         }
       },
-      "EnergyStatistics": {
-        "type": "object",
-        "description": "Site energy statistics aggregated by day, month, or year",
-        "properties": {
-          "siteId": {
-            "type": "string"
-          },
-          "period": {
-            "type": "string",
-            "enum": ["day", "month", "year"],
-            "description": "Statistics period"
-          },
-          "startDate": {
-            "type": "string",
-            "format": "date",
-            "description": "Query start date"
-          },
-          "endDate": {
-            "type": "string",
-            "format": "date",
-            "description": "Query end date"
-          },
-          "data": {
-            "type": "array",
-            "description": "Data points aggregated by period",
-            "items": {
-              "type": "object",
-              "properties": {
-                "date": {
-                  "type": "string",
-                  "description": "Date identifier. Format varies by period: day='2025-10-11', month='2025-10', year='2025'",
-                  "example": "2025-10-11"
-                },
-                "totalChargeKwh": {
-                  "type": "number",
-                  "format": "double",
-                  "description": "Total charge (kWh)"
-                },
-                "totalDischargeKwh": {
-                  "type": "number",
-                  "format": "double",
-                  "description": "Total discharge (kWh)"
-                },
-                "totalPvGenerationKwh": {
-                  "type": "number",
-                  "format": "double",
-                  "description": "Total PV generation (kWh)"
-                },
-                "totalLoadConsumptionKwh": {
-                  "type": "number",
-                  "format": "double",
-                  "description": "Total load consumption (kWh)"
-                },
-                "gridImportKwh": {
-                  "type": "number",
-                  "format": "double",
-                  "description": "Grid import energy (kWh)"
-                },
-                "gridExportKwh": {
-                  "type": "number",
-                  "format": "double",
-                  "description": "Grid export energy (kWh)"
-                },
-                "devices": {
-                  "type": "array",
-                  "description": "Energy data for each device (returned when includeDevices=true)",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "deviceId": {
-                        "type": "string",
-                        "description": "Device ID"
-                      },
-                      "batteryChargeKwh": {
-                        "type": "number",
-                        "format": "double",
-                        "description": "Battery charge (kWh)"
-                      },
-                      "batteryDischargeKwh": {
-                        "type": "number",
-                        "format": "double",
-                        "description": "Battery discharge (kWh)"
-                      },
-                      "pvGenerationKwh": {
-                        "type": "number",
-                        "format": "double",
-                        "description": "PV generation (kWh)"
-                      },
-                      "inverterGenerationKwh": {
-                        "type": "number",
-                        "format": "double",
-                        "description": "PCS generation (kWh)"
-                      },
-                      "inverterConsumptionKwh": {
-                        "type": "number",
-                        "format": "double",
-                        "description": "PCS consumption (kWh)"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
       "DeviceEnergyStatistics": {
         "type": "object",
         "description": "Device energy statistics aggregated by day, month, or year",
@@ -2105,6 +1999,11 @@
                   "type": "number",
                   "format": "double",
                   "description": "PV generation (kWh)"
+                },
+                "thirdPartyPvGenerationKwh": {
+                  "type": "number",
+                  "format": "double",
+                  "description": "Third-party(AC coupled) PV generation (kWh)"
                 },
                 "inverterGenerationKwh": {
                   "type": "number",
