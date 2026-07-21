@@ -2226,14 +2226,14 @@
             "type": "integer",
             "description": "Site import limit in W",
             "minimum": 0,
-            "maximum": 1000000,
+            "maximum": 65535,
             "example": 1000
           },
           "siteExportLimitW": {
             "type": "integer",
             "description": "Site export limit in W",
             "minimum": 0,
-            "maximum": 1000000,
+            "maximum": 65535,
             "example": 1000
           }
         }
@@ -2486,14 +2486,14 @@
             "type": "integer",
             "description": "Site import limit in W",
             "minimum": 0,
-            "maximum": 1000000,
+            "maximum": 65535,
             "example": 1000
           },
           "siteExportLimitW": {
             "type": "integer",
             "description": "Site export limit in W",
             "minimum": 0,
-            "maximum": 1000000,
+            "maximum": 65535,
             "example": 1000
           },
           "samplingRate": {
