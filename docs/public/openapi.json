@@ -1726,7 +1726,7 @@
               "gridReactivePowerKvar": {
                 "type": "number",
                 "format": "double",
-                "description": "Grid reactive power (kvar, positive=absorb, negative=export)"
+                "description": "Grid reactive power at the point of connection (kvar; site-reference convention: positive=absorbed from grid, negative=injected into grid)"
               },
               "gridFrequencyHz": {
                 "type": "number",
@@ -1787,7 +1787,7 @@
               "reactivePowerKvar": {
                 "type": "number",
                 "format": "double",
-                "description": "Reactive power (kvar, positive=export, negative=absorb)"
+                "description": "Inverter AC reactive power (kvar; generator-reference convention: positive=injected into grid, negative=absorbed from grid)"
               },
               "frequencyHz": {
                 "type": "number",
