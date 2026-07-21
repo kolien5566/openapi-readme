@@ -11,8 +11,8 @@
   },
   "servers": [
     {
-      "url": "https://openapi-au.pylontechcloud.com/api/openapi/v1",
-      "description": "Australia Production Environment"
+      "url": "https://openapi-test.pylontechcloud.com/api/openapi/v1",
+      "description": "Test Environment"
     }
   ],
   "security": [
@@ -39,7 +39,7 @@
     },
     {
       "name": "Fault & Alarm",
-      "description": "Fault and alarm information query"
+      "description": "Fault, alarm, and notice information query"
     },
     {
       "name": "Device Command",
@@ -94,10 +94,9 @@
             "name": "faultStatus",
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": ["normal", "fault"]
+              "type": "boolean"
             },
-            "description": "Filter by fault status: Normal, Fault, Alarm"
+            "description": "Filter by fault status: Normal, Fault"
           },
           {
             "name": "includeDevices",
@@ -201,10 +200,9 @@
             "name": "faultStatus",
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": ["normal", "fault"]
+              "type": "boolean"
             },
-            "description": "Filter by fault status: Normal, Fault, Alarm"
+            "description": "Filter by fault status: Normal, Fault"
           }
         ],
         "responses": {
@@ -240,7 +238,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/DeviceDetail"
+                  "$ref": "#/components/schemas/Device"
                 }
               }
             }
@@ -400,10 +398,19 @@
       "get": {
         "tags": ["Energy Statistics"],
         "summary": "Get device energy statistics",
-        "description": "Return device energy statistics aggregated by 15 minutes, 30 minutes, 1 hour, day, month, or year. For 15min, 30min, and 1h periods, the query range must be exactly one calendar day, from 00:00 to 00:00 on the following day.",
+        "description": "Return device energy statistics aggregated by day, month, or year.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
+          },
+          {
+            "name": "siteId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Site ID"
           },
           {
             "name": "period",
@@ -411,9 +418,9 @@
             "required": true,
             "schema": {
               "type": "string",
-              "enum": ["15min", "30min", "1h", "day", "month", "year"]
+              "enum": ["day", "month", "year"]
             },
-            "description": "Statistics period: Every 15 minutes, Every 30 minutes, Hourly, Daily, Monthly, or Yearly. The 15min, 30min, and 1h periods support a one-day query range only."
+            "description": "Statistics period: Daily, Monthly, or Yearly."
           },
           {
             "$ref": "#/components/parameters/StartDate"
@@ -441,9 +448,9 @@
     },
     "/devices/{deviceId}/alarms": {
       "get": {
-        "tags": ["Fault & Alarm"],
-        "summary": "Get device fault and alarm list",
-        "description": "Return device fault and alarm records within a 30-day time range.",
+        "tags": ["Fault, Alarm & Notice"],
+        "summary": "Get device alarm list",
+        "description": "Return device fault, alarm, and notice records within a 30-day time range.",
         "parameters": [
           {
             "$ref": "#/components/parameters/DeviceId"
@@ -484,7 +491,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Alarm list returned successfully",
+            "description": "Fault, alarm, and notice list returned successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -618,6 +625,174 @@
         }
       }
     },
+        "/devices/{deviceId}/commands/{commandId}/cancel": {
+      "put": {
+        "tags": ["Device Command"],
+        "summary": "Cancel command",
+        "description": "Cancel a pending or executing command.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          },
+          {
+            "name": "commandId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Command ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Command cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Command cancelled"
+                    },
+                    "commandId": {
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Data timestamp (UTC)"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Command already completed, cannot cancel",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/devices/{deviceId}/commands/{commandId}": {
+      "get": {
+        "tags": ["Device Command"],
+        "summary": "Query command execution status",
+        "description": "Return the execution status of a command.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/DeviceId"
+          },
+          {
+            "name": "commandId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Command ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Command status returned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandStatus"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/devices/commands": {
+      "post": {
+        "tags": ["Device Command"],
+        "summary": "Batch send device commands",
+        "description": "Send the same power control dispatch command to multiple devices. Returns a batch command ID for tracking or cancellation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["devices", "command"],
+                "properties": {
+                  "devices": {
+                    "type": "array",
+                    "description": "List of IDs, up to 100 items",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "command": {
+                    "$ref": "#/components/schemas/CommandRequest"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Batch command received",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "batchCommandId": {
+                      "type": "string",
+                      "description": "System generated batch command ID"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Batch command received"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "422": {
+            "description": "Command parameters exceed device capability range",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/devices/commands/{batchCommandId}/cancel": {
       "put": {
         "tags": ["Device Command"],
@@ -687,173 +862,6 @@
           },
           "409": {
             "description": "Batch command already completed, cannot cancel",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/devices/{deviceId}/commands/{commandId}": {
-      "get": {
-        "tags": ["Device Command"],
-        "summary": "Query command execution status",
-        "description": "Return the execution status of a command.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/DeviceId"
-          },
-          {
-            "name": "commandId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Command ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Command status returned successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CommandStatus"
-                }
-              }
-            }
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          }
-        }
-      }
-    },
-    "/devices/{deviceId}/commands/{commandId}/cancel": {
-      "put": {
-        "tags": ["Device Command"],
-        "summary": "Cancel command",
-        "description": "Cancel a pending or executing command.",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/DeviceId"
-          },
-          {
-            "name": "commandId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "description": "Command ID"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Command cancelled",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Command cancelled"
-                    },
-                    "commandId": {
-                      "type": "string"
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time",
-                      "description": "Data timestamp (UTC)"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "description": "Command already completed, cannot cancel",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/devices/commands": {
-      "post": {
-        "tags": ["Device Command"],
-        "summary": "Batch send device commands",
-        "description": "Send the same power control dispatch command to multiple devices. Returns a batch command ID for tracking or cancellation.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["devices", "command"],
-                "properties": {
-                  "devices": {
-                    "type": "array",
-                    "description": "List of IDs, up to 100 items",
-                    "minItems": 1,
-                    "maxItems": 100,
-                    "items": {
-                      "type": "string"
-                    }
-                  },
-                  "command": {
-                    "$ref": "#/components/schemas/CommandRequest"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "202": {
-            "description": "Batch command received",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "batchCommandId": {
-                      "type": "string",
-                      "description": "System generated batch command ID"
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Batch command received"
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "422": {
-            "description": "Command parameters exceed device capability range",
             "content": {
               "application/json": {
                 "schema": {
@@ -1339,9 +1347,9 @@
         "in": "query",
         "schema": {
           "type": "string",
-          "enum": ["fault", "alarm"]
+          "enum": ["fault", "alarm", "notice"]
         },
-        "description": "Alarm Level: Fault, Alarm"
+        "description": "Alarm level: Fault, Alarm, Notice"
       },
       "AlarmStatus": {
         "name": "status",
@@ -1488,9 +1496,8 @@
             "type": "boolean"
           },
           "faultStatus": {
-            "type": "string",
-            "enum": ["normal", "fault", "alarm"],
-            "description": "Fault status"
+            "type": "boolean",
+            "description": "Is device fault"
           },
           "devices": {
             "type": "array",
@@ -1636,29 +1643,14 @@
             "description": "Is device online"
           },
           "faultStatus": {
-            "type": "string",
-            "enum": ["normal", "fault", "alarm"],
-            "description": "Fault status"
-          }
-        }
-      },
-      "DeviceDetail": {
-        "type": "object",
-        "description": "Device details",
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Device"
+            "type": "boolean",
+            "description": "Is device fault"
           },
-          {
-            "type": "object",
-            "properties": {
-              "gridConnected": {
+          "gridConnected": {
                 "type": "boolean",
                 "description": "Grid connection status: true for on-grid, false for off-grid"
               }
-            }
-          }
-        ]
+        }
       },
       "SiteTelemetry": {
         "type": "object",
@@ -1928,13 +1920,17 @@
           "deviceId": {
             "type": "string"
           },
-          "startTime": {
-            "type": "string",
-            "format": "date-time"
+          "total": {
+            "type": "integer",
+            "description": "Total device count"
           },
-          "endTime": {
-            "type": "string",
-            "format": "date-time"
+          "page": {
+            "type": "integer",
+            "description": "Current page number"
+          },
+          "size": {
+            "type": "integer",
+            "description": "Items per page"
           },
           "data": {
             "type": "array",
@@ -2052,14 +2048,18 @@
       },
       "DeviceEnergyStatistics": {
         "type": "object",
-        "description": "Device energy statistics aggregated by 15 minutes, 30 minutes, 1 hour, day, month, or year",
+        "description": "Device energy statistics aggregated by day, month, or year",
         "properties": {
+          "siteId": {
+            "type": "string",
+            "description": "Site ID"
+          },
           "deviceId": {
             "type": "string"
           },
           "period": {
             "type": "string",
-            "enum": ["15min", "30min", "1h", "day", "month", "year"],
+            "enum": ["day", "month", "year"],
             "description": "Aggregation interval"
           },
           "startDate": {
@@ -2080,8 +2080,8 @@
               "properties": {
                 "date": {
                   "type": "string",
-                  "description": "Period identifier. For 15min, 30min, and 1h periods, this is the interval start time in ISO 8601 format; for day, month, and year periods, examples are '2025-10-11', '2025-10', and '2025'.",
-                  "example": "2025-10-11T00:00:00Z"
+                  "description": "Period identifier. For day, month, and year periods, examples are '2025-10-11', '2025-10', and '2025'.",
+                  "example": "2025-10-11"
                 },
                 "batteryChargeKwh": {
                   "type": "number",
@@ -2128,8 +2128,8 @@
         "properties": {
           "alarmLevel": {
             "type": "string",
-            "enum": ["fault", "alarm"],
-            "description": "Alarm type"
+            "enum": ["fault", "alarm", "notice"],
+            "description": "Record level: Fault, Alarm, or Notice"
           },
           "alarmCode": {
             "type": "string",
@@ -2166,7 +2166,7 @@
           },
           "total": {
             "type": "integer",
-            "description": "Total alarm count"
+            "description": "Total fault, alarm, and notice count"
           },
           "page": {
             "type": "integer",
@@ -2178,58 +2178,75 @@
           },
           "alarms": {
             "type": "array",
-            "description": "Alarm list",
+            "description": "Fault, alarm, and notice list",
             "items": {
               "$ref": "#/components/schemas/Alarm"
             }
           }
         }
       },
+      "PowerControl": {
+        "type": "object",
+        "minProperties": 1,
+        "description": "Include one or more power control properties. During the command's effective time period, supplied values override the device's existing defaults; omitted properties keep the device's existing settings. Additional power control properties may be added in future versions.",
+        "properties": {
+          "targetBatteryPowerW": {
+            "type": "integer",
+            "description": "Target battery power in W. Discharging is positive and charging is negative.",
+            "example": 0
+          },
+          "chargeCutoffSocPercent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Charge cutoff state of charge (%).",
+            "example": 0
+          },
+          "dischargeCutoffSocPercent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Discharge cutoff state of charge (%).",
+            "example": 0
+          },
+          "operationMode": {
+            "type": "string",
+            "enum": ["selfConsumption", "feedInPriority", "backupMode"],
+            "description": "Operation mode: Self-consumption, Feed-in priority, Backup mode"
+          },
+          "siteImportLimitW": {
+            "type": "integer",
+            "description": "Site import limit in W",
+            "minimum": 0,
+            "maximum": 1000000,
+            "example": 1000
+          },
+          "siteExportLimitW": {
+            "type": "integer",
+            "description": "Site export limit in W",
+            "minimum": 0,
+            "maximum": 1000000,
+            "example": 1000
+          }
+        }
+      },
       "CommandRequest": {
         "type": "object",
+        "example": {
+          "powerControl": {
+            "targetBatteryPowerW": 0
+          },
+          "startTime": "2025-10-11T00:00:00Z",
+          "endTime": "2025-10-11T01:00:00Z"
+        },
         "required": [
-          "activePowerControl",
-          "reactivePowerControl",
+          "powerControl",
           "startTime",
           "endTime"
         ],
         "properties": {
-          "activePowerControl": {
-            "type": "object",
-            "description": "Active power control",
-            "properties": {
-              "mode": {
-                "type": "string",
-                "enum": [
-                  "batteryPowerTargetW",
-                  "activePowerTargetW",
-                  "gridExportPowerLimitW",
-                  "gridImportPowerLimitW"
-                ],
-                "description": "Active power control mode: Battery constant power charge/discharge, Inverter AC side target active power, Grid export power limit, Grid import power limit"
-              },
-              "value": {
-                "type": "number",
-                "format": "integer",
-                "description": "Target value"
-              }
-            }
-          },
-          "reactivePowerControl": {
-            "type": "object",
-            "description": "Reactive power control",
-            "properties": {
-              "mode": {
-                "type": "string",
-                "enum": ["reactivePowerTargetVar", "fixedPowerFactorPercent"],
-                "description": "Reactive power control mode: Target reactive power, Fixed power factor"
-              },
-              "value": {
-                "type": "number",
-                "format": "integer",
-                "description": "Target value"
-              }
-            }
+          "powerControl": {
+            "$ref": "#/components/schemas/PowerControl"
           },
           "startTime": {
             "type": "string",
@@ -2263,6 +2280,17 @@
       "CommandStatus": {
         "type": "object",
         "description": "Command status details",
+        "example": {
+          "id": "command-001",
+          "deviceId": "device-001",
+          "powerControl": {
+            "targetBatteryPowerW": 0
+          },
+          "startTime": "2025-10-11T00:00:00Z",
+          "endTime": "2025-10-11T01:00:00Z",
+          "status": "received",
+          "receivedAt": "2025-10-10T23:59:00Z"
+        },
         "properties": {
           "id": {
             "type": "string",
@@ -2272,41 +2300,8 @@
             "type": "string",
             "description": "Device ID"
           },
-          "activePowerControl": {
-            "type": "object",
-            "description": "Active power control",
-            "properties": {
-              "mode": {
-                "type": "string",
-                "enum": [
-                  "batteryPowerTargetW",
-                  "activePowerTargetW",
-                  "gridExportPowerLimitW"
-                ],
-                "description": "Active power control mode: Battery constant power charge/discharge, Inverter AC side target active power, Grid export power limit"
-              },
-              "value": {
-                "type": "number",
-                "format": "integer",
-                "description": "Target value"
-              }
-            }
-          },
-          "reactivePowerControl": {
-            "type": "object",
-            "description": "Reactive power control",
-            "properties": {
-              "mode": {
-                "type": "string",
-                "enum": ["reactivePowerTargetVar", "fixedPowerFactorPercent"],
-                "description": "Reactive power control mode: Target reactive power, Fixed power factor"
-              },
-              "value": {
-                "type": "number",
-                "format": "integer",
-                "description": "Target value"
-              }
-            }
+          "powerControl": {
+            "$ref": "#/components/schemas/PowerControl"
           },
           "startTime": {
             "type": "string",
@@ -2436,8 +2431,8 @@
           },
           "action": {
             "type": "string",
-            "enum": ["charge", "discharge", "standby"],
-            "description": "Action type: charge, discharge, or standby with no charging or discharging"
+            "enum": ["charge", "discharge"],
+            "description": "Action type: Charge, Discharge"
           },
           "targetBatteryPowerW": {
             "type": "number",
@@ -2496,11 +2491,6 @@
           "samplingRate": {
             "type": "integer",
             "enum": [60, 300]
-          },
-          "timezone": {
-            "type": "string",
-            "description": "Device timezone",
-            "example": "UTC+10:00"
           }
         }
       },

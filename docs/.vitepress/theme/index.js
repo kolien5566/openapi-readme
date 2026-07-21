@@ -5,7 +5,7 @@ import './style.css'
 
 import spec from '../../public/openapi.json'
 
-const productionApiBaseUrl = 'https://openapi-au.pylontechcloud.com/api/openapi/v1'
+const productionApiBaseUrl = 'https://openapi-test.pylontechcloud.com/api/openapi/v1'
 const apiProxyPath = '/api/openapi/v1'
 const apiBaseUrl = typeof window !== 'undefined'
   ? `${window.location.origin}${apiProxyPath}`
@@ -15,7 +15,7 @@ const clientSpec = {
   servers: [
     {
       url: apiBaseUrl,
-      description: 'Production Environment via Same-Origin Proxy',
+      description: 'Test Environment via Same-Origin Proxy',
     },
   ],
 }
@@ -105,7 +105,7 @@ export default {
           hiddenSlots: ['branding', 'code-samples'],
         },
         storage: {
-          prefix: '--pylontech-openapi-au-proxy-v2',
+          prefix: '--pylontech-openapi-test-proxy-v1',
         },
         playground: {
           jsonEditor: {
