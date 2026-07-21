@@ -203,6 +203,14 @@
               "type": "boolean"
             },
             "description": "Filter by fault status: Normal, Fault"
+          },
+          {
+            "name": "gridConnected",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filter by grid connection status: true for on-grid, false for off-grid. Omit to return devices regardless of grid connection status."
           }
         ],
         "responses": {
