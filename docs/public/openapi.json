@@ -2116,11 +2116,6 @@
             "description": "Discharge cutoff state of charge (%).",
             "example": 0
           },
-          "operationMode": {
-            "type": "string",
-            "enum": ["selfConsumption", "feedInPriority", "backupMode"],
-            "description": "Operation mode: Self-consumption, Feed-in priority, Backup mode"
-          },
           "siteImportLimitW": {
             "type": "integer",
             "description": "Site import limit in W",
